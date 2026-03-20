@@ -1,0 +1,36 @@
+tags:
+  - Sub-Categorias
+summary: Cadastra uma nova subcategoria
+description: Cria um novo registro vinculando-o obrigatoriamente a uma Categoria Pai existente. O nome deve ser único dentro da mesma Categoria Pai.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: Dados da subcategoria
+    required: true
+    schema:
+      type: object
+      required:
+        - categoria_id
+        - nome
+      properties:
+        categoria_id:
+          type: integer
+          example: 1
+          description: "ID numérico da Categoria Pai"
+        nome:
+          type: string
+          example: "Mountain Bike"
+          description: "Nome da subcategoria"
+responses:
+  201:
+    description: Subcategoria criada com sucesso
+  400:
+    description: Erro de validação dos dados enviados
+  409:
+    description: Conflito - Já existe uma subcategoria com este nome nesta Categoria
+  422:
+    description: Erro de negócio ou Categoria Pai não encontrada

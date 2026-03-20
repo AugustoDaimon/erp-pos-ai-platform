@@ -1,0 +1,32 @@
+tags:
+  - Clientes
+summary: Lista todos os clientes
+description: Retorna um array com todos os clientes cadastrados no sistema.
+produces:
+  - application/json
+responses:
+  200:
+    description: Lista de clientes recuperada com sucesso
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          nome:
+            type: string
+            example: "João Silva"
+          celular:
+            type: string
+            example: "(11) 98765-4321"
+          sem_whatsapp:
+            type: boolean
+            example: false
+          bike_info:
+            type: string
+            example: "Quadro Absolute, Cor Preta, Aro 29"
+          criado_em:
+            type: string
+            example: "2026-03-14T10:00:00"

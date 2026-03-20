@@ -1,0 +1,35 @@
+tags:
+  - Categorias
+summary: Atualiza os dados de uma categoria
+description: Modifica o nome de uma categoria existente.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: categoria_id
+    in: path
+    description: ID numérico da categoria a ser atualizada
+    required: true
+    type: integer
+  - in: body
+    name: body
+    description: Campos que deseja atualizar
+    required: true
+    schema:
+      type: object
+      properties:
+        nome:
+          type: string
+          example: "Transmissão 12v"
+responses:
+  200:
+    description: Categoria atualizada com sucesso
+  400:
+    description: Erro de validação nos campos enviados
+  404:
+    description: Categoria não encontrada no banco de dados
+  409:
+    description: Conflito - O novo nome já está sendo usado por outra categoria
+  422:
+    description: Erro na regra de negócio

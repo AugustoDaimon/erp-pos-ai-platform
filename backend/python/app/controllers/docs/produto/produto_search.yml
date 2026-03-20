@@ -1,0 +1,16 @@
+tags:
+  - Produtos
+summary: Busca um produto específico
+description: Retorna todos os detalhes do produto pelo seu ID numérico.
+produces:
+  - application/json
+parameters:
+  - name: produto_id
+    in: path
+    required: true
+    type: integer
+responses:
+  200:
+    description: Produto encontrado
+  404:
+    description: Produto não encontrado

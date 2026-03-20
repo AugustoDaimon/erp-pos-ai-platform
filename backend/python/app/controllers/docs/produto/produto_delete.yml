@@ -1,0 +1,16 @@
+tags:
+  - Produtos
+summary: Remove um produto
+description: Deleta permanentemente o produto do banco de dados.
+produces:
+  - application/json
+parameters:
+  - name: produto_id
+    in: path
+    required: true
+    type: integer
+responses:
+  200:
+    description: Produto removido com sucesso
+  404:
+    description: Produto não encontrado

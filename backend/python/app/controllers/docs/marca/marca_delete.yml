@@ -1,0 +1,17 @@
+tags:
+  - Marcas
+summary: Remove uma marca
+description: Deleta uma marca permanentemente do banco de dados pelo seu ID. O vínculo com as categorias (na tabela auxiliar) será desfeito automaticamente pelo banco de dados.
+produces:
+  - application/json
+parameters:
+  - name: marca_id
+    in: path
+    description: ID numérico da marca a ser deletada
+    required: true
+    type: integer
+responses:
+  200:
+    description: Marca removida com sucesso
+  404:
+    description: Marca não encontrada no banco de dados

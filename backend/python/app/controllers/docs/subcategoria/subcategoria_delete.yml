@@ -1,0 +1,17 @@
+tags:
+  - Sub-Categorias
+summary: Remove uma subcategoria
+description: Deleta permanentemente a subcategoria do banco.
+produces:
+  - application/json
+parameters:
+  - name: subcategoria_id
+    in: path
+    description: ID numérico
+    required: true
+    type: integer
+responses:
+  200:
+    description: Removida com sucesso
+  404:
+    description: Não encontrada

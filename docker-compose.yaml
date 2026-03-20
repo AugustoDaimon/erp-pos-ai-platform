@@ -1,0 +1,59 @@
+services:
+
+# ----------- DATABASE -------------
+  postgres:
+    image: postgres:latest
+    restart: no
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5433:5432"
+    #volumes:
+    #  - postgres_data:/var/lib/postgresql
+    #  - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# ----------- FRONT-END -------------
+
+  react-dev:
+    build:
+      context: ./frontend/react
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/react:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+
+# ----------- BACK-END -------------
+
+  python:
+    build:
+      context: ./backend/python
+      dockerfile: Dockerfile
+    container_name: flask-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/python:/app
+    environment:
+      - FLASK_ENV=development
+      - DB_PORT=5432
+      - DB_HOST=postgres
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydatabase
+    command: python app.py

@@ -1,0 +1,43 @@
+tags:
+  - Produtos
+summary: Atualiza um produto
+description: Permite a atualização parcial (PATCH) dos dados de um produto.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: produto_id
+    in: path
+    required: true
+    type: integer
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      properties:
+        descricao:
+          type: string
+          example: "Bicicleta Oggi Hacker Sport 29 (Atualizada)"
+        valor_venda:
+          type: number
+          format: float
+          example: 1950.00
+        estoque_atual:
+          type: integer
+          example: 10
+        sku:
+          type: string
+          example: "OGG-HCK-29-PRT-V2"
+responses:
+  200:
+    description: Produto atualizado com sucesso
+  400:
+    description: Erro de validação
+  404:
+    description: Produto não encontrado
+  409:
+    description: Conflito - SKU fornecido já pertence a outro produto
+  422:
+    description: Entidade de relacionamento não encontrada ou regra de negócio violada

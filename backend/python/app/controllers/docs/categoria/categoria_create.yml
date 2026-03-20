@@ -1,0 +1,31 @@
+tags:
+  - Categorias
+summary: Cadastra uma nova categoria
+description: Cria um novo registro de categoria no catálogo (ex. Bicicletas, Peças). O nome deve ser único.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: Dados da categoria a ser criada
+    required: true
+    schema:
+      type: object
+      required:
+        - nome
+      properties:
+        nome:
+          type: string
+          example: "Transmissão"
+          description: "Nome da categoria (máximo 100 caracteres)"
+responses:
+  201:
+    description: Categoria criada com sucesso
+  400:
+    description: Erro de validação dos dados enviados (Ex. nome muito curto)
+  409:
+    description: Conflito - Já existe uma categoria cadastrada com este nome
+  422:
+    description: Erro na regra de negócio ao tentar criar a categoria

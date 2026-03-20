@@ -1,0 +1,17 @@
+tags:
+  - Categorias
+summary: Busca uma categoria específica
+description: Retorna os detalhes de uma categoria através do seu ID numérico.
+produces:
+  - application/json
+parameters:
+  - name: categoria_id
+    in: path
+    description: ID numérico da categoria
+    required: true
+    type: integer
+responses:
+  200:
+    description: Detalhes da categoria encontrada
+  404:
+    description: Categoria não encontrada no banco de dados

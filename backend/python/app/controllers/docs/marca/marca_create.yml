@@ -1,0 +1,33 @@
+tags:
+  - Marcas
+summary: Cadastra uma nova marca
+description: Cria uma marca e opcionalmente já a vincula a várias categorias.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - nome
+      properties:
+        nome:
+          type: string
+          example: "SRAM"
+        categorias_vinculadas:
+          type: array
+          items:
+            type: integer
+          example: [1, 2]
+          description: "Lista de IDs das categorias"
+responses:
+  201:
+    description: Marca criada com sucesso
+  409:
+    description: Conflito - Marca já existe
+  422:
+    description: Alguma categoria informada não existe

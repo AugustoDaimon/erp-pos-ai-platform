@@ -1,0 +1,23 @@
+tags:
+  - Categorias
+summary: Lista todas as categorias
+description: Retorna um array com todas as categorias cadastradas no sistema, ordenadas pelo ID.
+produces:
+  - application/json
+responses:
+  200:
+    description: Lista de categorias recuperada com sucesso
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          nome:
+            type: string
+            example: "Transmissão"
+          criado_em:
+            type: string
+            example: "2026-03-18T10:00:00"

@@ -1,0 +1,8 @@
+tags:
+  - Marcas
+summary: Lista todas as marcas
+produces:
+  - application/json
+responses:
+  200:
+    description: Lista recuperada com sucesso

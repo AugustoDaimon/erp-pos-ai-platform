@@ -1,0 +1,41 @@
+tags:
+  - Clientes
+summary: Cadastra um novo cliente
+description: Cria um novo registro de cliente na loja. O campo nome é obrigatório.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: Dados do cliente a ser criado
+    required: true
+    schema:
+      type: object
+      required:
+        - nome
+      properties:
+        nome:
+          type: string
+          example: "João Silva"
+          description: "Nome completo do cliente"
+        celular:
+          type: string
+          example: "(11) 98765-4321"
+          description: "Celular do cliente no formato (00) 00000-0000"
+        sem_whatsapp:
+          type: boolean
+          example: false
+          description: "Marca se o cliente não possui ou não quer contato por WhatsApp"
+        bike_info:
+          type: string
+          example: "Quadro Absolute, Cor Preta, Aro 29"
+          description: "Informações de identificação da bicicleta do cliente"
+responses:
+  201:
+    description: Cliente criado com sucesso
+  400:
+    description: Erro de validação dos dados enviados (Ex. formato de celular incorreto)
+  422:
+    description: Erro na regra de negócio ao tentar criar o cliente

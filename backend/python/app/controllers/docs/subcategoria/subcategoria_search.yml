@@ -1,0 +1,17 @@
+tags:
+  - Sub-Categorias
+summary: Busca uma subcategoria específica
+description: Retorna os detalhes através do ID numérico.
+produces:
+  - application/json
+parameters:
+  - name: subcategoria_id
+    in: path
+    description: ID numérico da subcategoria
+    required: true
+    type: integer
+responses:
+  200:
+    description: Detalhes da subcategoria
+  404:
+    description: Subcategoria não encontrada

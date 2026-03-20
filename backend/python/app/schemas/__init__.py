@@ -1,0 +1,5 @@
+from .cliente_schema import CreateClienteRequest, ClienteResponse, UpdateClienteRequest
+from .item_pedido_schema import CreateItemPedidoRequest, ItemPedidoResponse, UpdateItemPedidoRequest
+from .pedido_schema import CreatePedidoRequest, PedidoResponse, UpdatePedidoRequest
+from .produto_schema import CreateProdutoRequest, ProdutoResponse, UpdateProdutoRequest
+from .categoria_schema import CreateCategoriaRequest, CategoriaResponse, UpdateCategoriaRequest

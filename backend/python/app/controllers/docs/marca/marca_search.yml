@@ -1,0 +1,34 @@
+tags:
+  - Marcas
+summary: Busca uma marca específica
+description: Retorna os detalhes de uma marca, incluindo a lista de IDs das categorias às quais ela pertence, buscando pelo seu ID numérico.
+produces:
+  - application/json
+parameters:
+  - name: marca_id
+    in: path
+    description: ID numérico da marca
+    required: true
+    type: integer
+responses:
+  200:
+    description: Detalhes da marca encontrados com sucesso
+    schema:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "Shimano"
+        categorias_vinculadas:
+          type: array
+          items:
+            type: integer
+          example: [1, 2]
+        criado_em:
+          type: string
+          example: "2026-03-19T10:00:00"
+  404:
+    description: Marca não encontrada no banco de dados

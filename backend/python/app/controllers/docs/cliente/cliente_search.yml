@@ -1,0 +1,17 @@
+tags:
+  - Clientes
+summary: Busca um cliente específico
+description: Retorna os detalhes de um cliente através do seu ID numérico.
+produces:
+  - application/json
+parameters:
+  - name: cliente_id
+    in: path
+    description: ID numérico do cliente
+    required: true
+    type: integer
+responses:
+  200:
+    description: Detalhes do cliente encontrado
+  404:
+    description: Cliente não encontrado no banco de dados

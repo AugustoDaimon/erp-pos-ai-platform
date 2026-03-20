@@ -1,0 +1,42 @@
+tags:
+  - Clientes
+summary: Atualiza os dados de um cliente
+description: Modifica os dados de um cliente existente. Todos os campos no corpo da requisição são opcionais (atualização parcial).
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: cliente_id
+    in: path
+    description: ID numérico do cliente a ser atualizado
+    required: true
+    type: integer
+  - in: body
+    name: body
+    description: Campos que deseja atualizar no cliente
+    required: true
+    schema:
+      type: object
+      properties:
+        nome:
+          type: string
+          example: "João Silva Sauro"
+        celular:
+          type: string
+          example: "(11) 91111-2222"
+        sem_whatsapp:
+          type: boolean
+          example: true
+        bike_info:
+          type: string
+          example: "Trocou para Quadro Oggi, Vermelho"
+responses:
+  200:
+    description: Cliente atualizado com sucesso
+  400:
+    description: Erro de validação nos campos enviados
+  404:
+    description: Cliente não encontrado no banco de dados
+  422:
+    description: Erro na regra de negócio ao tentar atualizar o cliente

@@ -1,0 +1,36 @@
+tags:
+  - Marcas
+summary: Atualiza uma marca
+description: Permite renomear ou alterar as categorias vinculadas. Atenção, a lista de categorias enviada substituirá a lista antiga por completo.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: marca_id
+    in: path
+    required: true
+    type: integer
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      properties:
+        nome:
+          type: string
+          example: "SRAM Pro"
+        categorias_vinculadas:
+          type: array
+          items:
+            type: integer
+          example: [1, 3, 5]
+responses:
+  200:
+    description: Marca atualizada
+  404:
+    description: Marca não encontrada
+  409:
+    description: Nome já em uso
+  422:
+    description: Categoria inválida

@@ -1,0 +1,36 @@
+tags:
+  - Sub-Categorias
+summary: Atualiza uma subcategoria
+description: Permite renomear a subcategoria ou movê-la para outra Categoria Pai.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: subcategoria_id
+    in: path
+    description: ID da subcategoria a ser atualizada
+    required: true
+    type: integer
+  - in: body
+    name: body
+    description: Campos que deseja atualizar (todos opcionais)
+    required: true
+    schema:
+      type: object
+      properties:
+        categoria_id:
+          type: integer
+          example: 2
+        nome:
+          type: string
+          example: "Gravel"
+responses:
+  200:
+    description: Subcategoria atualizada com sucesso
+  404:
+    description: Subcategoria não encontrada
+  409:
+    description: Conflito de nome na nova/atual categoria
+  422:
+    description: Categoria Pai informada não existe

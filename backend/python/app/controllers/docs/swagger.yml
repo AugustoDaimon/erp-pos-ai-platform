@@ -1,0 +1,113 @@
+swagger: "2.0"
+info:
+  title: API Salas, Horários, Notificações, Docentes e Alunos 
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: 'JWT Authorization header Insira: Bearer Token'
+
+security:
+  - Bearer: []
+
+definitions:
+  Sala:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      nome_sala:
+        type: string
+        example: "Sala A"
+
+  Horario:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "DWEC8"
+      hora_fim:
+        type: string
+        example: "08:00:00"
+      hora_inicio:
+        type: string
+        example: "07:00:00"
+      dia_semana:
+        type: string
+        example: "Segunda-feira"
+
+  Turma:
+    type: object
+    properties:
+      codigo_disc:
+        type: string
+        example: "DWEC8"
+      nome:
+        type: string
+        example: "Desenvolvimento Web 2"
+      ano:
+        type: integer
+        example: "2025"
+      semestre:
+        type: integer
+        example: "2" 
+      horarios_id:
+        type: string
+        example: "Horario1"
+
+  Aluno:
+    type: object
+    properties:
+      matricula:
+        type: string
+        example: "PC7856897"
+      nome:
+          type: string
+          example: "Juliano"
+      telefone:
+          type: string
+          example: "(11) 99999-9999"
+      email:
+          type: string
+          example: "teste@aluno.ifsp.edu.br" 
+      periodo_de_referencia:
+          type: string
+          example: "8º Semestre" 
+
+  Docente:
+    type: object
+    properties:
+      matricula:
+        type: string
+        example: "PC7856897"
+      nome:
+          type: string
+          example: "Juliano"
+      telefone:
+          type: string
+          example: "(11) 99999-9999"
+      email:
+          type: string
+          example: "teste@aluno.ifsp.edu.br" 
+      coordenador:
+          type: integer
+          example: coordenador" 
+
+  Notificacao:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: "1"
+      occurred_at:
+          type: time
+          example: ""
+      porcentagem:
+          type: float
+          example: "0.95"
+      turmas_id:
+          type: integer
+          example: "1" 

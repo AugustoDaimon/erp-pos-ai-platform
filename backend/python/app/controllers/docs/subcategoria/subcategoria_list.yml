@@ -1,0 +1,26 @@
+tags:
+  - Sub-Categorias
+summary: Lista todas as subcategorias
+description: Retorna um array com todas as subcategorias cadastradas.
+produces:
+  - application/json
+responses:
+  200:
+    description: Lista recuperada com sucesso
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          categoria_id:
+            type: integer
+            example: 1
+          nome:
+            type: string
+            example: "Mountain Bike"
+          criado_em:
+            type: string
+            example: "2026-03-19T10:00:00"

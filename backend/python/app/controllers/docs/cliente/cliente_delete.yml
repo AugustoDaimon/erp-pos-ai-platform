@@ -1,0 +1,17 @@
+tags:
+  - Clientes
+summary: Remove um cliente
+description: Deleta um cliente permanentemente do banco de dados pelo seu ID.
+produces:
+  - application/json
+parameters:
+  - name: cliente_id
+    in: path
+    description: ID numérico do cliente a ser deletado
+    required: true
+    type: integer
+responses:
+  200:
+    description: Cliente removido com sucesso
+  404:
+    description: Cliente não encontrado no banco de dados

@@ -1,0 +1,30 @@
+tags:
+  - Produtos
+summary: Lista e filtra produtos
+description: Retorna os produtos cadastrados. Permite uso de query params para filtragem.
+produces:
+  - application/json
+parameters:
+  - in: query
+    name: categoria_id
+    type: integer
+    description: Filtra por ID da Categoria
+    required: false
+  - in: query
+    name: marca_id
+    type: integer
+    description: Filtra por ID da Marca
+    required: false
+  - in: query
+    name: busca
+    type: string
+    description: Busca parcial pela descrição do produto
+    required: false
+  - in: query
+    name: estoque_baixo
+    type: boolean
+    description: Se true, retorna apenas produtos com estoque_atual <= estoque_minimo
+    required: false
+responses:
+  200:
+    description: Lista recuperada com sucesso

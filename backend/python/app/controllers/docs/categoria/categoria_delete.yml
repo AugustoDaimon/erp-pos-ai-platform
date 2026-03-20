@@ -1,0 +1,17 @@
+tags:
+  - Categorias
+summary: Remove uma categoria
+description: Deleta uma categoria permanentemente do banco de dados pelo seu ID.
+produces:
+  - application/json
+parameters:
+  - name: categoria_id
+    in: path
+    description: ID numérico da categoria a ser deletada
+    required: true
+    type: integer
+responses:
+  200:
+    description: Categoria removida com sucesso
+  404:
+    description: Categoria não encontrada no banco de dados

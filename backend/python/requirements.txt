@@ -1,0 +1,14 @@
+flask==3.0.3
+argon2-cffi
+requests
+pyjwt
+Flask-SQLAlchemy
+pydantic
+pydantic[email]
+setuptools
+flasgger
+flask-cors
+psycopg2-binary
+Flask-JWT-Extended
+Flask-Bcrypt
+redis
