@@ -1,3 +1,5 @@
+from typing import List, Optional
+from sqlalchemy import func, select
 from ..interfaces.produto_repository import IProdutoRepository
 from ..entities.produto import Produto
 from ..models.produto_model import ProdutoModel
@@ -5,14 +7,13 @@ from ..infrastructure.database.db import db
 
 class ProdutoRepository(IProdutoRepository):
 
-    def get_by_id(self, id: int) -> Produto | None:
-        model = db.session.get(ProdutoModel, id)
+    def find_by_id(self, produto_id: int) -> Optional[Produto]:
+        model = db.session.get(ProdutoModel, produto_id)
         return model.to_entity() if model else None
 
-    def get_by_sku(self, sku: str) -> Produto | None:
+    def find_by_sku(self, sku: str) -> Optional[Produto]:
         # Busca exata ignorando maiúsculas/minúsculas no SKU
-        from sqlalchemy import func
-        stmt = db.select(ProdutoModel).where(func.lower(ProdutoModel.sku) == sku.lower())
+        stmt = select(ProdutoModel).where(func.lower(ProdutoModel.sku) == sku.lower())
         model = db.session.scalars(stmt).first()
         return model.to_entity() if model else None
 
@@ -22,25 +23,27 @@ class ProdutoRepository(IProdutoRepository):
         db.session.commit()
         return model.to_entity()
 
-    def list_all(self) -> list[Produto]:
+    def list_all(self) -> List[Produto]:
         # Ordenamos por ID decrescente para os mais novos aparecerem primeiro
-        stmt = db.select(ProdutoModel).order_by(ProdutoModel.id.desc())
+        stmt = select(ProdutoModel).order_by(ProdutoModel.id.desc())
         models = db.session.scalars(stmt).all()
         return [m.to_entity() for m in models]
 
-    def update(self, produto: Produto) -> Produto | None:
+    def update(self, produto: Produto) -> Optional[Produto]:
         model = db.session.get(ProdutoModel, produto.id)
         if not model:
             return None
 
-        # Atualiza todos os campos
+        # Atualiza campos do Catálogo (Pai)
+        model.nome = produto.descricao
+        model.preco_venda = produto.valor_venda
+
+        # Atualiza campos específicos do Produto
         model.categoria_id = produto.categoria_id
         model.subcategoria_id = produto.subcategoria_id
         model.marca_id = produto.marca_id
-        model.descricao = produto.descricao
         model.observacao = produto.observacao
         model.sku = produto.sku
-        model.valor_venda = produto.valor_venda
         model.valor_instalacao = produto.valor_instalacao
         model.custo_compra = produto.custo_compra
         model.estoque_atual = produto.estoque_atual
@@ -53,8 +56,23 @@ class ProdutoRepository(IProdutoRepository):
         db.session.commit()
         return model.to_entity()
 
-    def delete(self, id: int) -> None:
-        model = db.session.get(ProdutoModel, id)
+    def delete(self, produto_id: int) -> bool:
+        model = db.session.get(ProdutoModel, produto_id)
         if model:
             db.session.delete(model)
             db.session.commit()
+            return True
+        return False
+
+    def update_estoque(self, produto_id: int, quantidade: int) -> bool:
+        """
+        Ajusta o saldo de estoque. 
+        quantidade pode ser positiva (entrada) ou negativa (saída na venda).
+        """
+        model = db.session.get(ProdutoModel, produto_id)
+        if not model:
+            return False
+        
+        model.estoque_atual += quantidade
+        db.session.commit()
+        return True

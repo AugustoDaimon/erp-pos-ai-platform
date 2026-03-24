@@ -1,0 +1,30 @@
+tags:
+  - Pedidos
+summary: Cancela um pedido e devolve os produtos ao estoque
+description: >
+  Altera o status do pedido para 'CANCELADO'. 
+  Itera sobre todos os itens do pedido e, para aqueles que são do tipo 'produto' (peças físicas), 
+  realiza a devolução da quantidade correspondente ao saldo de estoque.
+produces:
+  - application/json
+parameters:
+  - name: pedido_id
+    in: path
+    type: integer
+    required: true
+    description: ID numérico do pedido que será cancelado.
+responses:
+  200:
+    description: Pedido cancelado e estoque estornado com sucesso.
+    schema:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: "Pedido 42 cancelado e estoque devolvido com sucesso."
+  404:
+    description: Pedido não encontrado.
+  422:
+    description: Erro de regra de negócio (ex. o pedido já havia sido cancelado anteriormente).
+  500:
+    description: Erro interno no servidor.

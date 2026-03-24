@@ -1,0 +1,40 @@
+tags:
+  - Catálogo
+summary: Busca unificada de itens para o PDV (Frente de Caixa)
+description: >
+  Realiza uma busca textual pelo nome, retornando uma lista mista de Produtos (peças) e Serviços (mão de obra). 
+  Ideal para alimentar campos de "autocomplete" na tela de vendas. Para otimizar a performance do banco de dados, 
+  a busca só é executada se o termo contiver 2 ou mais caracteres; caso contrário, retorna uma lista vazia.
+produces:
+  - application/json
+parameters:
+  - name: q
+    in: query
+    type: string
+    required: false
+    description: Termo de busca digitado pelo usuário (ex. "freio", "câmara").
+responses:
+  200:
+    description: Busca realizada com sucesso. Retorna um array de itens do catálogo.
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 15
+          nome:
+            type: string
+            example: "Câmara de Ar Aro 29"
+          preco_venda:
+            type: number
+            format: float
+            example: 35.00
+          tipo:
+            type: string
+            example: "produto"
+          criado_em:
+            type: string
+            format: date-time
+            example: "2026-03-24T10:00:00Z"

@@ -1,112 +1,129 @@
+from typing import List
 from ..entities.pedido import Pedido
+from ..entities.item_pedido import ItemPedido
 from ..interfaces.pedido_repository import IPedidoRepository
+from ..interfaces.item_catalogo_repository import IItemCatalogoRepository
+from ..interfaces.produto_repository import IProdutoRepository
 
-from ..DTOs.pedido_dto import (
-    CreatePedidoDTO, 
-    UpdatePedidoDTO, 
-    FiltroPedidoDTO, 
-    PedidoResponseDTO
-)
+# Nota: Assumindo que você tem esses DTOs atualizados
+from ..DTOs.pedido_dto import CreatePedidoDTO, PedidoResponseDTO
 
 # ==========================================
 # Exceções de Domínio (Erros de Negócio)
 # ==========================================
-class PedidoNotFoundError(Exception):
-    pass
-
-class InvalidPedidoDataError(Exception):
-    pass
-
-class PagamentoInvalidoError(Exception):
-    pass
-
+class PedidoNotFoundError(Exception): pass
+class InvalidPedidoDataError(Exception): pass
+class PagamentoInvalidoError(Exception): pass
+class ItemNaoEncontradoError(Exception): pass
+class EstoqueInsuficienteError(Exception): pass
 
 # ==========================================
 # Serviço / Caso de Uso
 # ==========================================
 class PedidoService:
-    def __init__(self, repo: IPedidoRepository):
-        self.repo = repo
+    def __init__(
+        self, 
+        pedido_repo: IPedidoRepository,
+        catalogo_repo: IItemCatalogoRepository,
+        produto_repo: IProdutoRepository
+    ):
+        self.pedido_repo = pedido_repo
+        self.catalogo_repo = catalogo_repo
+        self.produto_repo = produto_repo
 
     def create_pedido(self, dto: CreatePedidoDTO) -> PedidoResponseDTO:
-        # Regra 1: Auditoria Financeira (Nunca confie no valor_total do Frontend)
-        if dto.subtotal < 0 or dto.taxas_cartao < 0 or dto.desconto < 0:
-            raise InvalidPedidoDataError("Valores financeiros não podem ser negativos.")
-            
-        valor_total_calculado = (dto.subtotal + dto.taxas_cartao) - dto.desconto
-        
-        if valor_total_calculado < 0:
-            raise InvalidPedidoDataError("O desconto não pode ser maior que o subtotal + taxas.")
-
-        # Regra 2: Validação de Pagamento para Pedidos Concluídos
-        if dto.status_pedido == 'CONCLUIDO':
-            if dto.valor_pago < valor_total_calculado:
-                raise PagamentoInvalidoError(
-                    f"Valor pago (R$ {dto.valor_pago:.2f}) é menor que o total do pedido (R$ {valor_total_calculado:.2f})."
-                )
-            if not dto.metodo_pagamento or dto.metodo_pagamento.strip() == "":
-                raise PagamentoInvalidoError("É obrigatório informar o método de pagamento para concluir a venda.")
-
-        novo_pedido = Pedido(
+        # 1. Cria a entidade base do Pedido com os dados do DTO
+        pedido = Pedido(
             cliente_id=dto.cliente_id,
-            subtotal=dto.subtotal,
             taxas_cartao=dto.taxas_cartao,
             desconto=dto.desconto,
-            valor_total=valor_total_calculado, # Usa o valor auditado pelo Backend
             valor_pago=dto.valor_pago,
             metodo_pagamento=dto.metodo_pagamento,
             emitir_nota_fiscal=dto.emitir_nota_fiscal,
-            status_pedido=dto.status_pedido
+            status_pedido=dto.status_pedido,
+            status_oficina=dto.status_oficina,
+            data_prevista_retirada=dto.data_prevista_retirada
         )
 
-        salvo = self.repo.create(novo_pedido)
-        return PedidoResponseDTO.from_entity(salvo)
+        # 2. Processamento e Auditoria dos Itens
+        if not dto.itens or len(dto.itens) == 0:
+            raise InvalidPedidoDataError("Um pedido não pode ser criado sem itens.")
 
-    def get_pedido(self, pedido_id: int) -> PedidoResponseDTO:
-        pedido = self.repo.get_by_id(pedido_id)
-        if not pedido:
-            raise PedidoNotFoundError(f"Pedido com ID '{pedido_id}' não foi encontrado.")
+        for item_dto in dto.itens:
+            # Verifica se o item existe no catálogo (pode ser Produto ou Serviço)
+            item_catalogo = self.catalogo_repo.find_by_id(item_dto.item_id)
+            if not item_catalogo:
+                raise ItemNaoEncontradoError(f"Item com ID {item_dto.item_id} não existe no catálogo.")
+
+            # Se for um PRODUTO físico, precisamos validar o estoque
+            if item_catalogo.tipo == 'produto':
+                produto = self.produto_repo.find_by_id(item_catalogo.id)
+                if produto.estoque_atual < item_dto.quantidade:
+                    raise EstoqueInsuficienteError(
+                        f"Estoque insuficiente para '{produto.descricao}'. "
+                        f"Disponível: {produto.estoque_atual}, Solicitado: {item_dto.quantidade}."
+                    )
+
+            # Usamos o valor unitário que o vendedor digitou (permite dar desconto no item)
+            # Mas recalculamos o total da linha para evitar fraudes no frontend
+            item_pedido = ItemPedido(
+                item_id=item_dto.item_id,
+                quantidade=item_dto.quantidade,
+                valor_unitario=item_dto.valor_unitario
+            )
+            pedido.itens.append(item_pedido)
+
+        # 3. Cálculo Financeiro (Regra de Ouro: O Backend calcula, não o Frontend)
+        pedido.calcular_totais() # Método que criamos na Entity Pedido
         
-        return PedidoResponseDTO.from_entity(pedido)
+        if pedido.valor_total < 0:
+            raise InvalidPedidoDataError("O desconto aplicado resulta num valor total negativo.")
 
-    def list_pedidos(self, filtro: FiltroPedidoDTO = None) -> list[PedidoResponseDTO]:
-        filtro = filtro or FiltroPedidoDTO()
-        
-        lista = self.repo.list_all()
-        if lista is None:
-            raise RuntimeError("Erro: O repositório retornou None ao listar pedidos.")
-            
-        return [PedidoResponseDTO.from_entity(p) for p in lista]
-
-    def update_pedido(self, pedido_id: int, dto: UpdatePedidoDTO) -> PedidoResponseDTO:
-        pedido = self.repo.get_by_id(pedido_id)
-        if not pedido:
-            raise PedidoNotFoundError(f"Pedido com ID '{pedido_id}' não encontrado para atualização.")
-
-        dados = dto.to_dict_exclude_none()
-
-        # Aplica as mudanças iniciais
-        for campo, valor in dados.items():
-            if hasattr(pedido, campo) and campo not in ('id', 'criado_em', 'subtotal', 'valor_total'):
-                setattr(pedido, campo, valor)
-
-        # Regra 3: Re-valida o pagamento se o status mudou para CONCLUIDO
+        # 4. Validação de Pagamento
         if pedido.status_pedido == 'CONCLUIDO':
             if pedido.valor_pago < pedido.valor_total:
-                raise PagamentoInvalidoError("O pedido não pode ser concluído sem o pagamento integral.")
+                raise PagamentoInvalidoError(
+                    f"Valor pago (R$ {pedido.valor_pago:.2f}) é menor que o total (R$ {pedido.valor_total:.2f})."
+                )
             if not pedido.metodo_pagamento:
-                raise PagamentoInvalidoError("Método de pagamento é obrigatório para concluir o pedido.")
+                raise PagamentoInvalidoError("É obrigatório informar o método de pagamento para concluir a venda.")
 
-        atualizado = self.repo.update(pedido)
-        if not atualizado:
-            raise RuntimeError("Falha no banco de dados ao atualizar o pedido.")
+        # 5. Persistência (Salva o pedido e os itens de uma vez só)
+        pedido_salvo = self.pedido_repo.create(pedido)
 
-        return PedidoResponseDTO.from_entity(atualizado)
+        # 6. Pós-Processamento: Dar baixa no estoque dos produtos físicos
+        # Como o pedido já foi salvo com sucesso, deduzimos o estoque
+        for item in pedido_salvo.itens:
+            item_cat = self.catalogo_repo.find_by_id(item.item_id)
+            if item_cat and item_cat.tipo == 'produto':
+                # Passa quantidade negativa para dar saída
+                self.produto_repo.update_estoque(item.item_id, -item.quantidade)
 
-    def delete_pedido(self, pedido_id: int) -> bool:
-        pedido = self.repo.get_by_id(pedido_id)
+        return PedidoResponseDTO.from_entity(pedido_salvo)
+
+    def cancelar_pedido(self, pedido_id: int) -> bool:
+        """
+        Um novo caso de uso! Se cancelar o pedido, o estoque deve voltar.
+        """
+        pedido = self.pedido_repo.find_by_id(pedido_id)
         if not pedido:
-            raise PedidoNotFoundError(f"Pedido com ID '{pedido_id}' não encontrado para exclusão.")
+            raise PedidoNotFoundError("Pedido não encontrado.")
+        
+        if pedido.status_pedido == 'CANCELADO':
+            raise InvalidPedidoDataError("Este pedido já está cancelado.")
 
-        self.repo.delete(pedido_id)
-        return True
+        # 1. Devolve o estoque
+        for item in pedido.itens:
+            item_cat = self.catalogo_repo.find_by_id(item.item_id)
+            if item_cat and item_cat.tipo == 'produto':
+                # Passa quantidade positiva para devolver ao estoque
+                self.produto_repo.update_estoque(item.item_id, item.quantidade)
+        
+        # 2. Atualiza o status
+        return self.pedido_repo.update_status(pedido_id, 'CANCELADO')
+
+    def find_pedido(self, pedido_id: int) -> PedidoResponseDTO:
+        pedido = self.pedido_repo.find_by_id(pedido_id)
+        if not pedido:
+            raise PedidoNotFoundError("Pedido não encontrado.")
+        return PedidoResponseDTO.from_entity(pedido)

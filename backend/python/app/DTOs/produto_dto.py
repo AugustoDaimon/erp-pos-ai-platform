@@ -60,6 +60,7 @@ class ProdutoResponseDTO:
     especificacao_3: str | None
     imagem_url: str | None
     criado_em: str
+    tipo: str  # ADICIONADO: Para consistência com o ItemCatalogo
 
     @classmethod
     def from_entity(cls, entity):
@@ -80,7 +81,8 @@ class ProdutoResponseDTO:
             especificacao_2=entity.especificacao_2,
             especificacao_3=entity.especificacao_3,
             imagem_url=entity.imagem_url,
-            criado_em=entity.criado_em.strftime("%Y-%m-%d %H:%M:%S") if entity.criado_em else ""
+            criado_em=entity.criado_em.strftime("%Y-%m-%d %H:%M:%S") if entity.criado_em else "",
+            tipo=getattr(entity, 'tipo', 'produto') # Puxa da entidade pai
         )
 
 @dataclass

@@ -50,16 +50,21 @@ def criar_produto():
         return jsonify({"erro_de_negocio": str(e)}), 422
     except SkuAlreadyExistsError as e:
         return jsonify({"erro_conflito": str(e)}), 409
+    except RuntimeError as e:
+        return jsonify({"erro_interno": str(e)}), 500
 
 @produto_bp.get("/")
 @swag_from('docs/produto/produto_list.yml')
 def listar_produtos():
-    # Pegando filtros da URL (Ex: /api/produtos?categoria_id=1&estoque_baixo=true)
+    # Segurança na extração do booleano (trata None)
+    estoque_baixo_str = request.args.get('estoque_baixo', default='false')
+    estoque_baixo = str(estoque_baixo_str).lower() in ['true', '1', 't', 'y', 'yes']
+
     filtro = FiltroProdutoDTO(
         categoria_id=request.args.get('categoria_id', type=int),
         marca_id=request.args.get('marca_id', type=int),
         busca_descricao=request.args.get('busca', type=str),
-        estoque_baixo=request.args.get('estoque_baixo', default='false').lower() == 'true'
+        estoque_baixo=estoque_baixo
     )
     
     produtos_dto = produto_service.list_produtos(filtro)
@@ -75,13 +80,15 @@ def buscar_por_id(produto_id: int):
     except ProdutoNotFoundError as e:
         return jsonify({"erro": str(e)}), 404
 
-@produto_bp.put("/<int:produto_id>")
+# Aceita PUT (Substituição) e PATCH (Atualização Parcial)
+@produto_bp.route("/<int:produto_id>", methods=['PUT', 'PATCH'])
 @swag_from('docs/produto/produto_update.yml')
 def atualizar_produto(produto_id: int):
     try:
         data = request.get_json()
         schema = UpdateProdutoRequest(**data)
         
+        # exclude_unset=True é perfeito aqui para o PATCH
         dto = UpdateProdutoDTO(**schema.model_dump(exclude_unset=True))
         
         produto_dto = produto_service.update_produto(produto_id, dto)
@@ -97,6 +104,8 @@ def atualizar_produto(produto_id: int):
         return jsonify({"erro_de_negocio": str(e)}), 422
     except SkuAlreadyExistsError as e:
         return jsonify({"erro_conflito": str(e)}), 409
+    except RuntimeError as e:
+        return jsonify({"erro_interno": str(e)}), 500
 
 @produto_bp.delete("/<int:produto_id>")
 @swag_from('docs/produto/produto_delete.yml')
@@ -106,3 +115,5 @@ def deletar_produto(produto_id: int):
         return jsonify({"detail": "Produto removido com sucesso"}), 200
     except ProdutoNotFoundError as e:
         return jsonify({"erro": str(e)}), 404
+    except RuntimeError as e:
+        return jsonify({"erro_interno": str(e)}), 500

@@ -12,3 +12,6 @@ psycopg2-binary
 Flask-JWT-Extended
 Flask-Bcrypt
 redis
+python-dotenv
+linkup-sdk
+Flask-Migrate==4.0.5

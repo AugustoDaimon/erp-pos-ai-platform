@@ -1,0 +1,88 @@
+tags:
+  - Pedidos
+summary: Cria um novo pedido (Venda ou Ordem de Serviço)
+description: >
+  Recebe os dados do cliente, totais (para conferência) e a lista de itens. 
+  O sistema audita os valores, verifica o estoque e, se for aprovado, salva o pedido e dá baixa nas peças físicas.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: Objeto contendo os dados do pedido e a lista de itens.
+    required: true
+    schema:
+      type: object
+      required:
+        - itens
+      properties:
+        cliente_id:
+          type: integer
+          example: 1
+        subtotal:
+          type: number
+          format: float
+          example: 150.00
+        taxas_cartao:
+          type: number
+          format: float
+          example: 5.00
+        desconto:
+          type: number
+          format: float
+          example: 10.00
+        valor_pago:
+          type: number
+          format: float
+          example: 145.00
+        metodo_pagamento:
+          type: string
+          example: "PIX"
+        emitir_nota_fiscal:
+          type: boolean
+          example: true
+        status_pedido:
+          type: string
+          example: "CONCLUIDO"
+        status_oficina:
+          type: string
+          example: "NAO_APLICAVEL"
+        data_prevista_retirada:
+          type: string
+          format: date-time
+          example: "2026-03-25T14:30:00Z"
+        itens:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - item_id
+              - quantidade
+              - valor_unitario
+            properties:
+              item_id:
+                type: integer
+                example: 15
+              quantidade:
+                type: integer
+                example: 2
+              valor_unitario:
+                type: number
+                format: float
+                example: 75.00
+responses:
+  201:
+    description: Pedido criado com sucesso (Estoque deduzido).
+  400:
+    description: Erro de validação no JSON (ex. faltou um campo obrigatório).
+  404:
+    description: Produto ou Serviço não encontrado no catálogo.
+  409:
+    description: Conflito - Estoque insuficiente para um dos produtos físicos.
+  422:
+    description: Erro de regra de negócio (ex. valor pago menor que o total).
+  500:
+    description: Erro interno no servidor ou falha no banco de dados.

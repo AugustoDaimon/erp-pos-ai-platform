@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useProdutoMetaData } from '../hooks/useProdutoMetaData';
 import { categoriaService } from '../services/categoriaService'; // Ajuste o caminho
-import { type Categoria } from '../services/types/Categoria';
 import { subcategoriaService } from '../services/subcategoriaService';
-import { type Subcategoria } from '../services/types/Subcategoria';
 import { marcaService } from '../services/marcaService'; // NOVO
-import { type Marca } from '../services/types/Marca'; // NOVO
 
 export default function GerenciarCatalogo() {
     // Estilos padronizados
@@ -18,76 +16,31 @@ export default function GerenciarCatalogo() {
     // ==========================================================================
     // ESTADOS
     // ==========================================================================
-    const [categorias, setCategorias] = useState<Categoria[]>([]);
-    const [isLoadingCat, setIsLoadingCat] = useState(false);
-
-    const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
-    const [isLoadingSub, setIsLoadingSub] = useState(false);
-
-    const [marcas, setMarcas] = useState<Marca[]>([]);
-    const [isLoadingMarca, setIsLoadingMarca] = useState(false);
-
-    const [error, setError] = useState<string | null>(null);
+    const { categorias, marcas, subcategorias, isLoading, invalidarCache } = useProdutoMetaData();
 
     // ==========================================================================
     // ESTADOS DOS FORMULÁRIOS
     // ==========================================================================
     const [novaCategoria, setNovaCategoria] = useState('');
-
     const [novaSubcategoria, setNovaSubcategoria] = useState('');
     const [subcatCategoriaId, setSubcatCategoriaId] = useState('');
-
     const [novaMarca, setNovaMarca] = useState('');
     const [marcaCategorias, setMarcaCategorias] = useState<number[]>([]);
-
-    // ==========================================================================
-    // 1. CARREGAMENTO INICIAL (READ)
-    // ==========================================================================
-
-    const carregarDadosIniciais = async () => {
-        setIsLoadingCat(true);
-        setIsLoadingSub(true);
-        setIsLoadingMarca(true); // Liga o loading da marca
-        try {
-            // Dispara as 3 requisições simultaneamente
-            const [cats, subs, mrcs] = await Promise.all([
-                categoriaService.listar(),
-                subcategoriaService.listar(),
-                marcaService.listar() // Busca as marcas!
-            ]);
-
-            setCategorias(cats);
-            setSubcategorias(subs);
-            setMarcas(mrcs); // Salva no estado
-        } catch (err) {
-            console.error("Erro ao buscar dados do catálogo:", err);
-            alert("Erro de conexão com o servidor.");
-        } finally {
-            setIsLoadingCat(false);
-            setIsLoadingSub(false);
-            setIsLoadingMarca(false);
-        }
-    };
-
-    useEffect(() => {
-        carregarDadosIniciais();
-    }, []);
 
     // ==========================================================================
     // FUNÇÕES DE AÇÃO (Onde você fará os POSTs para sua API no futuro)
     // ==========================================================================
     const handleAddCategoria = async () => {
         if (!novaCategoria.trim()) return;
-
         try {
-            const criada = await categoriaService.criar({ nome: novaCategoria });
+            await categoriaService.criar({ nome: novaCategoria });
+            
+            // Forçar atualização após create
+            invalidarCache('categorias');
 
-            // Atualiza o estado local com a categoria que veio do banco (já com ID)
-            setCategorias([...categorias, criada]);
             setNovaCategoria('');
             alert("Categoria adicionada com sucesso!");
         } catch (err: any) {
-            // Aqui tratamos aquele erro 409 (Conflito) que configuramos no Python!
             if (err.response?.status === 409) {
                 alert("Erro: Já existe uma categoria com este nome.");
             } else {
@@ -98,25 +51,21 @@ export default function GerenciarCatalogo() {
 
     const handleAddSubcategoria = async () => {
         if (!novaSubcategoria.trim() || !subcatCategoriaId) return;
-
         try {
-            setIsLoadingSub(true);
-            const criada = await subcategoriaService.criar({
+            await subcategoriaService.criar({
                 categoria_id: Number(subcatCategoriaId), // Converte a string do select para número
                 nome: novaSubcategoria
             });
 
-            setSubcategorias([...subcategorias, criada]);
+            invalidarCache('subcategorias');
             setNovaSubcategoria('');
-            setSubcatCategoriaId(''); // Limpa o dropdown
+            setSubcatCategoriaId(''); // Limpa dropdown
         } catch (err: any) {
             if (err.response?.status === 409) {
                 alert("Erro: Já existe uma subcategoria com este nome DENTRO desta categoria.");
             } else {
                 alert("Erro ao salvar subcategoria.");
             }
-        } finally {
-            setIsLoadingSub(false);
         }
     };
 
@@ -128,17 +77,14 @@ export default function GerenciarCatalogo() {
 
     const handleAddMarca = async () => {
         if (!novaMarca.trim()) return;
-
         try {
-            setIsLoadingMarca(true);
-
-            // Envia o nome e o array de IDs que foram selecionados nas "pílulas"
-            const criada = await marcaService.criar({
+            // Envia o nome e o array de IDs que foram selecionados
+            await marcaService.criar({
                 nome: novaMarca,
                 categorias_vinculadas: marcaCategorias
             });
 
-            setMarcas([...marcas, criada]);
+            invalidarCache('marcas')
             setNovaMarca('');
             setMarcaCategorias([]); // Limpa as pílulas selecionadas
         } catch (err: any) {
@@ -149,8 +95,6 @@ export default function GerenciarCatalogo() {
             } else {
                 alert("Erro ao salvar a marca.");
             }
-        } finally {
-            setIsLoadingMarca(false);
         }
     };
 
@@ -182,24 +126,22 @@ export default function GerenciarCatalogo() {
                             className={inputStyle}
                             value={novaCategoria}
                             onChange={(e) => setNovaCategoria(e.target.value)}
-                            disabled={isLoadingCat}
+                            disabled={isLoading}
                         />
                         <button
                             onClick={handleAddCategoria}
-                            disabled={isLoadingCat}
+                            disabled={isLoading}
                             className="bg-[#00c950] text-black font-bold py-2 rounded-lg shadow hover:bg-green-500 transition border-2 border-transparent hover:border-black disabled:opacity-50"
                         >
-                            {isLoadingCat ? 'SALVANDO...' : '+ ADICIONAR CATEGORIA'}
+                            {isLoading ? 'SALVANDO...' : '+ ADICIONAR CATEGORIA'}
                         </button>
                     </div>
 
                     <div className="mt-4 flex-1 flex flex-col">
                         <h3 className="font-bold text-gray-700 mb-2">Categorias Cadastradas:</h3>
 
-                        {error && <div className="text-red-500 font-bold mb-2">⚠️ {error}</div>}
-
                         <div className={listContainerStyle}>
-                            {categorias.length === 0 && !isLoadingCat && (
+                            {categorias.length === 0 && !isLoading && (
                                 <p className="text-gray-400 text-center mt-10">Nenhuma categoria encontrada.</p>
                             )}
 
@@ -226,7 +168,7 @@ export default function GerenciarCatalogo() {
                             value={subcatCategoriaId}
                             onChange={(e) => setSubcatCategoriaId(e.target.value)}
                         >
-                            <option value="" disabled>Selecione a Categoria Pai...</option>
+                            <option value="" disabled>Selecione a Categoria...</option>
                             {categorias.map(cat => (
                                 <option key={cat.id} value={cat.id}>{cat.nome}</option>
                             ))}

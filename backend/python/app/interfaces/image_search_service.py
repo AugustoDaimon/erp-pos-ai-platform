@@ -5,7 +5,7 @@ from ..entities.product_image import ProductImage
 
 class IImageSearchService(ABC):
     @abstractmethod
-    def search_images(self, query: str, count: int = 10) -> List[ProductImage]:
+    def search_images(self, search_query: str, count: int = 10) -> List[ProductImage]:
         """
         Busca imagens na internet baseada em uma descrição.
         Deve retornar uma lista de entidades ProductImage.

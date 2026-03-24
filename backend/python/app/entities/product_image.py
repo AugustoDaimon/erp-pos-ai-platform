@@ -1,7 +1,6 @@
 class ProductImage:
-    def __init__(self, url: str, thumbnail_url: str, title: str):
+    def __init__(self, url: str, title: str):
         self.url = url
-        self.thumbnail_url = thumbnail_url
         self.title = title
 
     @staticmethod

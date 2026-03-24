@@ -1,0 +1,19 @@
+tags:
+  - Pedidos
+summary: Busca um pedido específico pelo ID
+description: Retorna todos os dados do pedido, incluindo cálculos automáticos (como saldo devedor) e a lista detalhada de itens atrelados a ele.
+produces:
+  - application/json
+parameters:
+  - name: pedido_id
+    in: path
+    type: integer
+    required: true
+    description: ID numérico do pedido.
+responses:
+  200:
+    description: Retorna os dados completos do pedido e seus itens.
+  404:
+    description: Pedido não encontrado no sistema.
+  500:
+    description: Erro interno no servidor.

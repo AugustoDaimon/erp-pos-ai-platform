@@ -1,30 +1,35 @@
 from abc import ABC, abstractmethod
-from ..entities import ItemPedido
+from typing import List, Optional
+from ..entities.item_pedido import ItemPedido
 
 class IItemPedidoRepository(ABC):
 
     @abstractmethod
-    def get_by_id(self, id: int) -> ItemPedido | None:
-        pass
-
-    @abstractmethod
     def create(self, item_pedido: ItemPedido) -> ItemPedido:
+        """Persiste um novo item vinculado a um pedido e ao catálogo."""
         pass
 
     @abstractmethod
-    def list_all(self) -> list[ItemPedido]:
+    def update(self, item_pedido: ItemPedido) -> Optional[ItemPedido]:
+        """Atualiza quantidades ou valores de um item de pedido existente."""
         pass
 
     @abstractmethod
-    def update(self, item_pedido: ItemPedido) -> ItemPedido:
+    def delete(self, item_id: int) -> bool:
+        """Remove um item específico. Retorna True se removido com sucesso."""
         pass
 
     @abstractmethod
-    def delete(self, id: int) -> None:
+    def find_by_id(self, item_id: int) -> Optional[ItemPedido]:
+        """Busca um item de pedido específico pelo seu ID único."""
         pass
 
-    # Domain-specific method: Highly recommended for this specific entity
     @abstractmethod
-    def list_by_pedido_id(self, pedido_id: int) -> list[ItemPedido]:
-        """Fetches all items associated with a specific order."""
+    def list_by_pedido_id(self, pedido_id: int) -> List[ItemPedido]:
+        """Busca todos os itens associados a um pedido (Útil para listagem rápida)."""
+        pass
+
+    @abstractmethod
+    def list_all(self) -> List[ItemPedido]:
+        """Lista todos os itens de pedidos do sistema (Geralmente para relatórios)."""
         pass

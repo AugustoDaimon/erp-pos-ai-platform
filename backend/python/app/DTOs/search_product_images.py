@@ -12,14 +12,14 @@ class SearchProductImagesUseCase:
 
     def execute(self, product_description: str) -> List[ProductImage]:
         # 1. Validação de Regra de Negócio Simples
-        if not product_description or len(product_description.strip()) < 3:
+        if not product_description:
             # Poderíamos lançar uma exceção customizada aqui
-            return []
+            return ["ERROR"]
 
         # 2. Chamada ao serviço (Abstração)
         # O Use Case não sabe se isso bate no Google, Bing ou um Mock de teste
         images = self.image_service.search_images(
-            query=product_description, 
+            search_query=product_description, 
             count=10
         )
 

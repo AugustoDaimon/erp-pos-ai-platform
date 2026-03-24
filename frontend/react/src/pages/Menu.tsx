@@ -1,18 +1,19 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Menu() {
   return (
     <div className="min-h-screen w-full bg-[#f4f6f9] p-6 lg:p-10 font-sans">
-      
+
       {/* 1. Container Principal do Banner (Resumo Rápido e Atualizações) */}
       <div className="w-full rounded-2xl bg-gradient-to-r from-[#1b2b4d] via-[#3a6b94] to-[#aedcf4] p-3 flex flex-col lg:flex-row gap-4 shadow-sm">
-        
+
         {/* PARTE ESQUERDA: Resumo Rápido */}
         <div className="flex-[2] flex flex-col">
           <h2 className="text-white font-bold text-sm tracking-wide uppercase pl-2 mb-2">
             Resumo Rápido
           </h2>
-          
+
           <div className="bg-[#f0ecd7] rounded-xl flex flex-col sm:flex-row p-4 shadow-inner min-h-[120px]">
             {/* Últimas Vendas */}
             <div className="flex-1 sm:border-r border-gray-300 pr-0 sm:pr-4 mb-4 sm:mb-0 flex flex-col">
@@ -63,38 +64,47 @@ export default function Menu() {
 
       {/* 2. GRID DE BOTÕES DO MENU (NOVO) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 mt-6 lg:mt-8">
-        
-        {/* PONTO DE VENDA (Destaque Azul - Ocupa 2 linhas) */}
-        <div className="col-span-2 md:col-span-1 row-span-2 bg-[#0d74ff] rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:-translate-y-1 cursor-pointer transition-all border border-[#0b66e6]">
-          <div className="w-20 h-20 md:w-28 md:h-28 border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center text-white/60 mb-4 md:mb-6">
-            Ícone
-          </div>
-          <h3 className="text-white font-extrabold text-2xl md:text-3xl mb-1 tracking-tight">PONTO DE<br/>VENDA</h3>
-          <p className="text-blue-100 text-sm font-medium mt-1">Realizar Novas Vendas</p>
-        </div>
 
-        {/* ESTOQUE */}
-        <div className="bg-white rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:-translate-y-1 cursor-pointer transition-all border border-gray-100">
+        {/* PONTO DE VENDA (Link para /ponto-de-venda) */}
+        <Link
+          to="/ponto-de-venda"
+          className="col-span-2 md:col-span-1 row-span-2 bg-[#0d74ff] rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:-translate-y-1 cursor-pointer transition-all border border-[#0b66e6]"
+        >
+          <div className="w-20 h-20 md:w-28 md:h-28 border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center text-white/60 mb-4 md:mb-6">
+            🛒
+          </div>
+          <h3 className="text-white font-extrabold text-2xl md:text-3xl mb-1 tracking-tight">PONTO DE<br />VENDA</h3>
+          <p className="text-blue-100 text-sm font-medium mt-1">Realizar Novas Vendas</p>
+        </Link>
+
+        {/* ESTOQUE (Link para /estoque) */}
+        <Link
+          to="/estoque"
+          className="bg-white rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:-translate-y-1 cursor-pointer transition-all border border-gray-100"
+        >
           <div className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center text-gray-400 mb-3">
-            Ícone
+            📦
           </div>
           <h3 className="text-black font-bold text-lg lg:text-xl mb-1 uppercase tracking-wide">Estoque</h3>
           <p className="text-gray-500 text-xs lg:text-sm">Gerenciar Produtos</p>
-        </div>
+        </Link>
 
-        {/* COMPRAS */}
-        <div className="bg-[#f0ecd7] rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:-translate-y-1 cursor-pointer transition-all border border-[#e5e0c8]">
+        {/* COMPRAS / CATÁLOGO (Link para /gerenciar-catalogo) */}
+        {/* Dica: Você pode usar o botão de Compras ou Relatórios para levar ao catálogo se preferir */}
+        <Link
+          to="/gerenciar-catalogo"
+          className="bg-[#f0ecd7] rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:-translate-y-1 cursor-pointer transition-all border border-[#e5e0c8]"
+        >
           <div className="w-16 h-16 border-2 border-dashed border-[#c9b485] rounded-xl flex items-center justify-center text-[#c9b485] mb-3">
-            Ícone
+            🏷️
           </div>
-          <h3 className="text-black font-bold text-lg lg:text-xl mb-1 uppercase tracking-wide">Compras</h3>
-          <p className="text-gray-600 text-xs lg:text-sm">Registrar Fornecedores</p>
-        </div>
+          <h3 className="text-black font-bold text-lg lg:text-xl mb-1 uppercase tracking-wide">Catálogo</h3>
+          <p className="text-gray-600 text-xs lg:text-sm">Categorias e Marcas</p>
+        </Link>
 
-        {/* SERVIÇOS */}
         <div className="bg-[#f0ecd7] rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:-translate-y-1 cursor-pointer transition-all border border-[#e5e0c8]">
           <div className="w-16 h-16 border-2 border-dashed border-[#c9b485] rounded-xl flex items-center justify-center text-[#c9b485] mb-3">
-            Ícone
+            🛠️
           </div>
           <h3 className="text-black font-bold text-lg lg:text-xl mb-1 uppercase tracking-wide">Serviços</h3>
           <p className="text-gray-600 text-xs lg:text-sm">Agendar Manutenções</p>
@@ -119,7 +129,7 @@ export default function Menu() {
         </div>
 
       </div>
-      
+
     </div>
   );
 }

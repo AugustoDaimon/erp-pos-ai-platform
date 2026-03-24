@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export interface AutocompleteProps {
   placeholder: string;
   options: string[];
   className?: string;
+  onSelect?: (value: string) => void; 
 }
 
 export default function AutocompleteInput({ 
   placeholder, 
   options, 
-  className = '' 
+  className = '',
+  onSelect 
 }: AutocompleteProps) {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+
+  // Sincroniza o valor digitado com o pai (para quando o usuário digita manualmente)
+  useEffect(() => {
+    if (onSelect) onSelect(inputValue);
+  }, [inputValue]);
 
   const filteredOptions = options.filter((opt) =>
     opt.toLowerCase().includes(inputValue.toLowerCase())
@@ -26,13 +33,12 @@ export default function AutocompleteInput({
     ? inputValue + firstMatch.slice(inputValue.length)
     : '';
 
-  // FUNÇÃO CORRIGIDA: Agora o Tab completa e pula para o próximo campo!
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Tab' && inlineSuggestion) {
-      // Removemos o e.preventDefault() daqui!
-      setInputValue(firstMatch!); // Completa com a sugestão
-      setIsOpen(false);           // Fecha o dropdown
-      // O navegador agora fará o trabalho dele e moverá o foco naturalmente.
+      setInputValue(firstMatch!); 
+      setIsOpen(false);
+      // Notifica o pai imediatamente na seleção por Tab
+      if (onSelect) onSelect(firstMatch!);
     }
   };
 
@@ -47,7 +53,7 @@ export default function AutocompleteInput({
         className={`${inputStyleBase} absolute top-0 left-0 bg-[#fdf2e3] text-blue-500 pointer-events-none placeholder-transparent`}
         value={inlineSuggestion}
         readOnly
-        tabIndex={-1} // Garante que o usuário nunca foque neste input fantasma acidentalmente
+        tabIndex={-1}
       />
 
       {/* INPUT PRINCIPAL */}
@@ -75,6 +81,8 @@ export default function AutocompleteInput({
                 e.preventDefault();
                 setInputValue(opt);
                 setIsOpen(false);
+                // Notifica o pai no clique
+                if (onSelect) onSelect(opt);
               }}
               className="px-3 py-2 hover:bg-[#b1e1fb] cursor-pointer font-bold text-gray-800 border-b border-gray-300 last:border-0 transition-colors"
             >

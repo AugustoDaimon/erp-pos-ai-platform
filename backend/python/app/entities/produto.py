@@ -1,6 +1,8 @@
 from datetime import datetime
+from ..entities.item_catalogo import ItemCatalogo
 
-class Produto:
+
+class Produto(ItemCatalogo):
     def __init__(
         self,
         descricao: str,
@@ -21,14 +23,23 @@ class Produto:
         id: int | None = None,
         criado_em: datetime | None = None
     ):
-        self.id = id
+        # Inicializa o pai (ItemCatalogo)
+        super().__init__(
+            nome=descricao, 
+            preco_venda=valor_venda, 
+            tipo='produto', 
+            id=id, 
+            criado_em=criado_em
+        )
+        
+        # Atributos específicos de Produto
+        self.descricao = descricao # Mantemos para compatibilidade
+        self.valor_venda = valor_venda
         self.categoria_id = categoria_id
         self.subcategoria_id = subcategoria_id
         self.marca_id = marca_id
-        self.descricao = descricao
         self.observacao = observacao
         self.sku = sku
-        self.valor_venda = valor_venda
         self.valor_instalacao = valor_instalacao
         self.custo_compra = custo_compra
         self.estoque_atual = estoque_atual
@@ -37,7 +48,3 @@ class Produto:
         self.especificacao_2 = especificacao_2
         self.especificacao_3 = especificacao_3
         self.imagem_url = imagem_url
-        self.criado_em = criado_em
-
-    def __repr__(self):
-        return f"<Produto {self.id or 'Novo'} - {self.descricao} (R$ {self.valor_venda})>"

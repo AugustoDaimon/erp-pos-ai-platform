@@ -1,0 +1,38 @@
+# docs/images/image_search.yml
+Pesquisa imagens de produtos no Google Custom Search.
+Retorna uma lista de até 10 imagens baseadas na descrição fornecida.
+---
+tags:
+  - Imagens
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      properties:
+        description:
+          type: string
+          example: "Teclado Mecânico Gamer RGB"
+          description: "Termo para busca de imagens"
+responses:
+  200:
+    description: Lista de imagens encontradas
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          url:
+            type: string
+            example: "https://exemplo.com/foto.jpg"
+          thumbnail_url:
+            type: string
+            example: "https://encrypted-tbn0.gstatic.com/images?..."
+          title:
+            type: string
+            example: "Teclado Mecânico RGB - Modelo X"
+  400:
+    description: Erro de validação nos dados enviados
+  502:
+    description: Erro na comunicação com o serviço externo (Google)
