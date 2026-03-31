@@ -20,7 +20,6 @@ categoria_bp = Blueprint("categorias", __name__, url_prefix='/api/categorias')
 # Instanciando o service injetando o repositório
 categoria_service = CategoriaService(CategoriaRepository())
 
-
 @categoria_bp.post("/")
 @swag_from('docs/categoria/categoria_create.yml')
 def criar_categoria():

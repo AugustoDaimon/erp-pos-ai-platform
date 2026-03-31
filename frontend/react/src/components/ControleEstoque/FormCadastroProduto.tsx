@@ -6,6 +6,7 @@ import { SecaoHistoricoCompras } from './SecaoHistoricoCompras';
 import { useProdutoMetaData } from '../../hooks/useProdutoMetaData';
 import { produtoService } from '../../services/produtoService';
 import { InputLockButton } from './InputLockButton';
+import { ModalGerenciarCatalogo } from './ModalGerenciarCatalogo';
 
 // 1. Estado Inicial Único (Fonte da Verdade)
 const initialFormData = {
@@ -31,6 +32,7 @@ const initialFormData = {
 
 export const FormCadastroProduto = () => {
   const [activeTab, setActiveTab] = useState<'estoque' | 'historico'>('estoque');
+  const [isModalCatalogoAberto, setIsModalCatalogoAberto] = useState(false);
 
   const { categorias, marcas, subcategorias, isLoading } = useProdutoMetaData();
   const categoriasOptions = categorias.map(c => c.nome);
@@ -186,9 +188,29 @@ export const FormCadastroProduto = () => {
           {/* CATEGORIA */}
           <div className="flex flex-col">
             <div className="flex justify-between items-center mb-1">
-              <label className={labelStyle}>Categoria</label>
-              <InputLockButton locked={!!lockedFields.categoria} onClick={() => toggleLock('categoria')} />
+              {/* Agrupamos a Label e o botão de Adicionar */}
+              <div className="flex items-center gap-2">
+                <label className={labelStyle}>Categoria</label>
+                <button
+                  type="button"
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline focus:outline-none font-medium transition-colors"
+                  onClick={() => setIsModalCatalogoAberto(true)}
+                >
+                  + Adicionar Novo (Categoria/Marca)
+                </button>
+                <ModalGerenciarCatalogo
+                  isOpen={isModalCatalogoAberto}
+                  onClose={() => setIsModalCatalogoAberto(false)}
+                />
+              </div>
+
+              {/* O cadeado continua isolado na direita pelo justify-between */}
+              <InputLockButton
+                locked={!!lockedFields.categoria}
+                onClick={() => toggleLock('categoria')}
+              />
             </div>
+
             <AutocompleteInput
               key={lockedFields.categoria ? 'locked-categoria' : `${formKey}-categoria`}
               placeholder=""
@@ -196,7 +218,6 @@ export const FormCadastroProduto = () => {
               onSelect={(val) => handleInputChange('categoria', val)}
             />
           </div>
-
 
           {/* SUB-CATEGORIA */}
           <div className="flex flex-col">
@@ -225,7 +246,7 @@ export const FormCadastroProduto = () => {
               onSelect={(val) => handleInputChange('marca', val)}
             />
           </div>
-          
+
           <input placeholder="Especificação 1" value={formData.especificacao1} className={inputStyle} onChange={(e) => handleInputChange('especificacao1', e.target.value)} />
           <input placeholder="Especificação 2" value={formData.especificacao2} className={inputStyle} onChange={(e) => handleInputChange('especificacao2', e.target.value)} />
           <input placeholder="Especificação 3" value={formData.especificacao3} className={inputStyle} onChange={(e) => handleInputChange('especificacao3', e.target.value)} />
