@@ -8,7 +8,6 @@ from ..infrastructure.database.db import db
 class ItemPedidoRepository(IItemPedidoRepository):
 
     def create(self, item_pedido: ItemPedido) -> ItemPedido:
-        # Criamos o model a partir da entity
         model = ItensPedidoModel(
             pedido_id=item_pedido.pedido_id,
             item_catalogo_id=item_pedido.item_id, # Chave polimórfica
@@ -20,7 +19,6 @@ class ItemPedidoRepository(IItemPedidoRepository):
         db.session.add(model)
         db.session.commit()
         
-        # Atribuímos o ID gerado pelo banco de volta à entity
         item_pedido.id = model.id
         return item_pedido
 
@@ -28,17 +26,12 @@ class ItemPedidoRepository(IItemPedidoRepository):
         model = db.session.get(ItensPedidoModel, item_pedido.id)
         if not model:
             return None
-
-        # Em itens de pedido, geralmente só permitimos alterar quantidade e valores
-        # ou trocar o item do catálogo (ex: errei o pneu no lançamento)
+        
         model.quantidade = item_pedido.quantidade
         model.valor_unitario = item_pedido.valor_unitario
         model.valor_total = item_pedido.valor_total
         model.item_catalogo_id = item_pedido.item_id
-        
         db.session.commit()
-        
-        # Usamos o método auxiliar de mapeamento que está no model (ou manual)
         return self._to_entity(model)
 
     def delete(self, item_id: int) -> bool:
@@ -64,7 +57,7 @@ class ItemPedidoRepository(IItemPedidoRepository):
         return [self._to_entity(m) for m in models]
 
     def _to_entity(self, model: ItensPedidoModel) -> ItemPedido:
-        """Método auxiliar interno para evitar repetição de mapeamento."""
+        """Método auxiliar interno para evitar repetição de mapeamento"""
         return ItemPedido(
             id=model.id,
             pedido_id=model.pedido_id,

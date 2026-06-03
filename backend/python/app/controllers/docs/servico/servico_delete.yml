@@ -1,0 +1,19 @@
+tags:
+  - Servicos
+summary: Deleta um serviço do catálogo
+description: Remove um serviço do catálogo utilizando o seu ID. 
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: servico_id
+    type: integer
+    required: true
+    description: ID numérico do serviço a ser deletado.
+responses:
+  200:
+    description: Serviço removido com sucesso.
+  404:
+    description: Serviço não encontrado.
+  500:
+    description: Erro interno do servidor.

@@ -7,9 +7,7 @@ from ..DTOs.item_pedido_dto import (
     ItemPedidoResponseDTO
 )
 
-# ==========================================
-# Exceções de Domínio (Erros de Negócio)
-# ==========================================
+# Exceções de Domínio
 class ItemPedidoNotFoundError(Exception):
     pass
 
@@ -17,23 +15,18 @@ class InvalidItemPedidoDataError(Exception):
     pass
 
 
-# ==========================================
-# Serviço / Caso de Uso
-# ==========================================
+# Caso de Uso
 class ItemPedidoService:
     def __init__(self, repo: IItemPedidoRepository):
         self.repo = repo
 
     def create_item(self, dto: CreateItemPedidoDTO) -> ItemPedidoResponseDTO:
-        # Regra 1: Quantidade deve ser válida
         if dto.quantidade <= 0:
             raise InvalidItemPedidoDataError("A quantidade do item deve ser maior que zero.")
 
-        # Regra 2: Valor não pode ser negativo
         if dto.valor_unitario < 0:
             raise InvalidItemPedidoDataError("O valor unitário não pode ser negativo.")
 
-        # Regra 3: Cálculo matemático seguro no Backend
         valor_total_calculado = dto.quantidade * dto.valor_unitario
 
         novo_item = ItemPedido(
@@ -54,9 +47,7 @@ class ItemPedidoService:
         
         return ItemPedidoResponseDTO.from_entity(item)
 
-    # Note o uso do método específico que criamos no repositório!
     def list_by_pedido(self, pedido_id: int) -> list[ItemPedidoResponseDTO]:
-        """Busca todos os itens de um pedido específico (O Carrinho)."""
         lista = self.repo.list_by_pedido_id(pedido_id)
         if lista is None:
             raise RuntimeError(f"Erro ao listar os itens do pedido {pedido_id}.")
@@ -69,8 +60,6 @@ class ItemPedidoService:
             raise ItemPedidoNotFoundError(f"Item do Pedido com ID '{item_id}' não encontrado para atualização.")
 
         dados = dto.to_dict_exclude_none()
-
-        # Se tentarem atualizar quantidade ou valor, precisamos revalidar
         nova_quantidade = dados.get('quantidade', item.quantidade)
         novo_valor_unitario = dados.get('valor_unitario', item.valor_unitario)
 
@@ -79,11 +68,8 @@ class ItemPedidoService:
         if novo_valor_unitario < 0:
             raise InvalidItemPedidoDataError("O valor unitário não pode ser negativo.")
 
-        # Aplica as mudanças
         item.quantidade = nova_quantidade
         item.valor_unitario = novo_valor_unitario
-        
-        # RECALCULA O TOTAL
         item.valor_total = item.quantidade * item.valor_unitario
 
         atualizado = self.repo.update(item)

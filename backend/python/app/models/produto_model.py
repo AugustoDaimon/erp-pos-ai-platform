@@ -4,15 +4,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 from .item_catalogo_model import ItemCatalogoModel
 from ..entities.produto import Produto
 
-class ProdutoModel(ItemCatalogoModel):
-    # O SQLAlchemy entende que por não ter __tablename__, ele usa a do pai (itens_catalogo)
-    
-    # Chaves Estrangeiras específicas de Produto
+class ProdutoModel(ItemCatalogoModel):  
+    __tablename__ = "produtos"
+
+    id: Mapped[int] = mapped_column(ForeignKey("itens_catalogo.id", ondelete="CASCADE"), primary_key=True)  
     categoria_id: Mapped[int | None] = mapped_column(ForeignKey("categorias.id", ondelete="RESTRICT"), nullable=True)
     subcategoria_id: Mapped[int | None] = mapped_column(ForeignKey("subcategorias.id", ondelete="SET NULL"), nullable=True)
-    marca_id: Mapped[int | None] = mapped_column(ForeignKey("marcas.id", ondelete="RESTRICT"), nullable=True)
-    
-    # Campos específicos que não existem em Serviços
+    marca_id: Mapped[int | None] = mapped_column(ForeignKey("marcas.id", ondelete="RESTRICT"), nullable=True)    
     sku: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
     valor_instalacao: Mapped[float] = mapped_column(Numeric(10, 2), default=0.00)
     custo_compra: Mapped[float] = mapped_column(Numeric(10, 2), default=0.00)
@@ -26,8 +24,6 @@ class ProdutoModel(ItemCatalogoModel):
     especificacao_3: Mapped[str | None] = mapped_column(String(255), nullable=True)
     imagem_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     
-    criado_em: Mapped[datetime] = mapped_column(DateTime, default=func.now(), server_default=func.now())
-
     # Configuração de Identidade Polimórfica
     __mapper_args__ = {
         "polymorphic_identity": "produto",

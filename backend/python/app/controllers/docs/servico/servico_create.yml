@@ -1,0 +1,38 @@
+tags:
+  - Servicos
+summary: Cria um novo serviço no catálogo
+description: Cadastra um novo serviço genérico no catálogo da loja/oficina (ex. Revisão Básica, Troca de Pneu).
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: Objeto JSON contendo os dados do serviço.
+    required: true
+    schema:
+      type: object
+      required:
+        - descricao
+        - preco
+      properties:
+        descricao:
+          type: string
+          example: "Revisão Geral de Câmbio"
+        preco:
+          type: number
+          format: float
+          example: 150.00
+        tempo_estimado:
+          type: integer
+          example: 120
+responses:
+  201:
+    description: Serviço criado com sucesso.
+  400:
+    description: Erro de validação dos dados de entrada (Pydantic).
+  422:
+    description: Erro de regra de negócio (ex. valor ou tempo negativo).
+  500:
+    description: Erro interno do servidor.

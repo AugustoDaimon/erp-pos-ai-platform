@@ -3,7 +3,7 @@ from ..entities.marca import Marca
 
 class IMarcaRepository(ABC):
     @abstractmethod
-    def get_by_id(self, id: int) -> Marca | None: pass
+    def find_by_id(self, id: int) -> Marca | None: pass
 
     @abstractmethod
     def get_by_nome(self, nome: str) -> Marca | None: pass

@@ -6,7 +6,7 @@ import type { Subcategoria } from '../../services/types/Subcategoria';
 
 interface ListaSubcategoriasProps {
     subcategorias: Subcategoria[];
-    categorias: Categoria[]; // Necessário para o Select de vínculo e para exibir o nome na lista
+    categorias: Categoria[]; 
     isLoading: boolean;
     onUpdate: (tipo: string) => void; 
     cardStyle: string;
@@ -31,20 +31,36 @@ export function ListaSubcategorias({
     const [subcatCategoriaId, setSubcatCategoriaId] = useState('');
 
     // ==========================================
+    // LÓGICA DE FILTRAGEM E ORDENAÇÃO
+    // ==========================================
+    const subcategoriasFiltradasEOrdenadas = subcategorias
+        // 1. Filtra pela categoria selecionada (se não houver nada selecionado, mostra todas)
+        .filter(sub => subcatCategoriaId ? sub.categoria_id === Number(subcatCategoriaId) : true)
+        // 2. Ordena em ordem alfabética
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+
+    // ==========================================
     // HANDLERS
     // ==========================================
     const handleAddSubcategoria = async () => {
-        if (!novaSubcategoria.trim() || !subcatCategoriaId) return;
+        // Alerta amigável caso ele tente adicionar sem selecionar a categoria pai
+        if (!subcatCategoriaId) {
+            alert("Por favor, selecione uma categoria no dropdown para vincular a nova sub-categoria.");
+            return;
+        }
+
+        if (!novaSubcategoria.trim()) return;
         
         try {
             await subcategoriaService.criar({
-                categoria_id: Number(subcatCategoriaId), // Converte a string do select para número
+                categoria_id: Number(subcatCategoriaId), 
                 nome: novaSubcategoria
             });
 
-            onUpdate('subcategorias'); // Avisa o Pai para recarregar o cache
+            onUpdate('subcategorias'); 
             setNovaSubcategoria('');
-            setSubcatCategoriaId(''); // Limpa o dropdown
+            // Opcional: Não vamos limpar o setSubcatCategoriaId('') para que 
+            // o usuário continue vendo a lista filtrada que ele acabou de adicionar!
         } catch (err: any) {
             if (err.response?.status === 409) {
                 alert("Erro: Já existe uma subcategoria com este nome DENTRO desta categoria.");
@@ -76,7 +92,6 @@ export function ListaSubcategorias({
         }
 
         try {
-            // Enviando a atualização para a API
             await subcategoriaService.atualizar(subcategoriaAtual.id, {
                 nome: novoNome.trim()
             });
@@ -93,49 +108,52 @@ export function ListaSubcategorias({
     // ==========================================
     return (
         <div className={cardStyle}>
-            <h2 className="text-xl font-extrabold text-black bg-white py-2 px-4 rounded-lg border-2 border-black shadow-sm text-center">
-                2. SUB-CATEGORIAS
+            <h2 className="text-xl font-extrabold text-black bg-white py-2 px-4 rounded-lg border-2 border-black shadow-sm text-center shrink-0">
+                SUB-CATEGORIAS
             </h2>
 
             {/* Formulário de Adição */}
-            <div className="flex flex-col gap-2 mt-2">
-                {/* Relacionamento 1:N (Dropdown) */}
-                <select
-                    className={inputStyle}
-                    value={subcatCategoriaId}
-                    onChange={(e) => setSubcatCategoriaId(e.target.value)}
-                >
-                    <option value="" disabled>Selecione a Categoria...</option>
-                    {categorias.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.nome}</option>
-                    ))}
-                </select>
+            <div className="flex flex-col gap-2 mt-2 h-[260px] shrink-0">
+                <div className="flex-1 flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-1">
+                    <select
+                        className={inputStyle}
+                        value={subcatCategoriaId}
+                        onChange={(e) => setSubcatCategoriaId(e.target.value)}
+                    >
+                        {/* Removido o disabled para permitir resetar o filtro */}
+                        <option value="">-- Mostrar Todas Categorias --</option>
+                        {categorias.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.nome}</option>
+                        ))}
+                    </select>
 
-                <input
-                    placeholder="Nome da sub-categoria"
-                    className={inputStyle}
-                    value={novaSubcategoria}
-                    onChange={(e) => setNovaSubcategoria(e.target.value)}
-                />
+                    <input
+                        placeholder="Nome da sub-categoria"
+                        className={inputStyle}
+                        value={novaSubcategoria}
+                        onChange={(e) => setNovaSubcategoria(e.target.value)}
+                    />
+                </div>
                 <button
                     onClick={handleAddSubcategoria}
-                    className="bg-[#00c950] text-black font-bold py-2 rounded-lg shadow hover:bg-green-500 transition border-2 border-transparent hover:border-black"
+                    className="mt-auto shrink-0 bg-[#00c950] text-black font-bold py-2 rounded-lg shadow hover:bg-green-500 transition border-2 border-transparent hover:border-black"
                 >
                     + ADICIONAR SUB-CATEGORIA
                 </button>
             </div>
 
             {/* Listagem */}
-            <div className="mt-4 flex-1 flex flex-col">
-                <h3 className="font-bold text-gray-700 mb-2">Sub-Categorias Cadastradas:</h3>
+            <div className="mt-4 flex-1 flex flex-col overflow-hidden">
+                <h3 className="font-bold text-gray-700 mb-2 shrink-0">Sub-Categorias Cadastradas:</h3>
                 <div className={listContainerStyle}>
 
-                    {subcategorias.length === 0 && !isLoading && (
+                    {/* Mudança: verificando o array filtrado */}
+                    {subcategoriasFiltradasEOrdenadas.length === 0 && !isLoading && (
                         <p className="text-gray-400 text-center mt-10">Nenhuma subcategoria encontrada.</p>
                     )}
 
-                    {subcategorias.map(sub => {
-                        // Busca o nome da categoria pai para exibir na pílula
+                    {/* Mudança: mapeando o array filtrado */}
+                    {subcategoriasFiltradasEOrdenadas.map(sub => {
                         const catPai = categorias.find(c => c.id === sub.categoria_id);
 
                         return (
@@ -156,7 +174,6 @@ export function ListaSubcategorias({
                                     </span>
 
                                     <div className="flex items-center gap-2">
-                                        {/* Botão de Editar (Lápis) */}
                                         <button
                                             type="button"
                                             onClick={() => handleEditSubcategoria(sub)}
@@ -168,7 +185,6 @@ export function ListaSubcategorias({
                                             </svg>
                                         </button>
 
-                                        {/* Botão de Deletar (X) */}
                                         <button
                                             type="button"
                                             onClick={() => handleDeleteSubcategoria(sub.id)}

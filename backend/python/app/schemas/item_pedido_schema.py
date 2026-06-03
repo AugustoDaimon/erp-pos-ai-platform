@@ -11,7 +11,7 @@ class CreateItemPedidoRequest(BaseModel):
     valor_unitario: float = Field(..., ge=0.0, description="Valor cobrado no momento da venda")
 
 class UpdateItemPedidoRequest(BaseModel):
-    # Usado caso o lojista altere a quantidade de um item que já está no carrinho
+    # Usa caso altere a quantidade de um item que já está no carrinho
     quantidade: int | None = Field(None, gt=0)
     valor_unitario: float | None = Field(None, ge=0.0)
 

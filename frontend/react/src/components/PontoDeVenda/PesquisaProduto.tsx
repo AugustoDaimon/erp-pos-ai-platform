@@ -1,17 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Fuse from 'fuse.js';
-import ProductCard from './ProductCard'; // O seu card atualizado
+import ProductCard from './ProductCard';
 import { produtoService } from '../../services/produtoService';
 import type { Produto } from '../../services/types/Produto';
 
+// IMPORT DO MODAL DE SERVIÇO
+import { ModalAdicionarServico } from './ModalAdicionarServico';
+
 interface CatalogoPesquisaProps {
   onAddToCart: (produto: Produto, isInstalled: boolean) => void;
+  onAddService: (servico: any, data: string, horario: string) => void;
 }
 
-export default function PesquisaProduto({ onAddToCart }: CatalogoPesquisaProps) {
+export default function PesquisaProduto({ onAddToCart, onAddService }: CatalogoPesquisaProps) {
   const [query, setQuery] = useState('');
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // NOVO: Estado para controlar a abertura do modal de serviço
+  const [isModalServicoOpen, setIsModalServicoOpen] = useState(false);
 
   // 1. Carrega o catálogo do banco ao abrir a tela
   useEffect(() => {
@@ -44,19 +51,26 @@ export default function PesquisaProduto({ onAddToCart }: CatalogoPesquisaProps) 
     return fuse.search(query).map(result => result.item);
   }, [query, fuse, produtos]);
 
+  // NOVO: Função que será chamada quando o usuário confirmar o agendamento no modal
+  const handleAdicionarServico = (servico: any, data: string, horario: string) => {
+    console.log("Serviço Agendado:", servico, "Data:", data, "Horário:", horario);
+    // Aqui no futuro você pode enviar esse serviço para o carrinho/resumo do pedido!
+    alert(`Serviço "${servico.descricao}" adicionado para ${data} às ${horario}!`);
+  };
+
   return (
     <div className="flex flex-col w-full h-full gap-4">
-      
+
       {/* DIV 1: Search Bar & Links */}
       <div className="flex flex-col gap-2 shrink-0">
         <div className="relative">
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={isLoading ? "Carregando estoque..." : "Pesquisar produto ou código..."} 
+            placeholder={isLoading ? "Carregando estoque..." : "Pesquisar produto ou código..."}
             disabled={isLoading}
-            className="w-full border-[2px] border-black rounded-sm h-12 px-4 text-lg outline-none placeholder-gray-400 focus:ring-2 focus:ring-blue-500 transition-all disabled:bg-gray-200" 
+            className="w-full border-[2px] border-black rounded-sm h-12 px-4 text-lg outline-none placeholder-gray-400 focus:ring-2 focus:ring-blue-500 transition-all disabled:bg-gray-200"
           />
           {isLoading && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -67,7 +81,13 @@ export default function PesquisaProduto({ onAddToCart }: CatalogoPesquisaProps) 
           <div className="flex items-center gap-2">
             <button className="hover:text-black transition-colors">Busca Avançada</button>
             <span className="text-gray-400 font-light">|</span>
-            <button className="hover:text-black transition-colors">Adicionar Serviço</button>
+            {/* ATUALIZADO: Evento onClick chama o modal */}
+            <button
+              onClick={() => setIsModalServicoOpen(true)}
+              className="hover:text-black transition-colors"
+            >
+              Adicionar Serviço
+            </button>
           </div>
           <span className="text-gray-500">
             {resultados.length} {resultados.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
@@ -79,14 +99,13 @@ export default function PesquisaProduto({ onAddToCart }: CatalogoPesquisaProps) 
       <div className="h-[40vh] lg:h-auto lg:flex-1 overflow-y-auto pr-2 lg:pr-4 custom-scrollbar flex flex-col gap-3 pb-4">
         {resultados.length > 0 ? (
           resultados.map((produto) => (
-            <ProductCard 
+            <ProductCard
               key={produto.id}
-              name={produto.descricao} 
+              name={produto.descricao}
               price={produto.valor_venda}
               valor_instalacao={produto.valor_instalacao || 0}
               imageUrl={produto.imagem_url || undefined}
-              // O ProductCard te avisa se o checkbox estava marcado quando o card foi clicado!
-              onAddToCart={(isInstalled) => onAddToCart(produto, isInstalled)} 
+              onAddToCart={(isInstalled) => onAddToCart(produto, isInstalled)}
             />
           ))
         ) : (
@@ -96,6 +115,13 @@ export default function PesquisaProduto({ onAddToCart }: CatalogoPesquisaProps) 
           </div>
         )}
       </div>
+
+      {/* NOVO: Instância do Modal de Serviços */}
+      <ModalAdicionarServico
+        isOpen={isModalServicoOpen}
+        onClose={() => setIsModalServicoOpen(false)}
+        onAdicionar={onAddService} // AQUI: Removemos o alerta falso e conectamos com a prop
+      />
 
     </div>
   );

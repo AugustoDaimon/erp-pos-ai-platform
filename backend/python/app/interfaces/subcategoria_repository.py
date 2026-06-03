@@ -4,7 +4,7 @@ from ..entities.subcategoria import Subcategoria
 class ISubcategoriaRepository(ABC):
 
     @abstractmethod
-    def get_by_id(self, id: int) -> Subcategoria | None:
+    def find_by_id(self, id: int) -> Subcategoria | None:
         pass
 
     @abstractmethod

@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 @dataclass
 class CreateMarcaDTO:
     nome: str
-    # Usamos field(default_factory=list) para garantir que sempre seja uma lista, mesmo vazia
     categorias_vinculadas: list[int] = field(default_factory=list)
 
 @dataclass

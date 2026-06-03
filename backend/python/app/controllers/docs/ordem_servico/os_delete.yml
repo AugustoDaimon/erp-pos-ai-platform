@@ -1,0 +1,20 @@
+Deletar Ordem de Serviço
+---
+tags:
+  - Ordem de Serviço
+summary: Remove permanentemente uma ordem de serviço
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: os_id
+    type: integer
+    required: true
+    description: ID da Ordem de Serviço
+responses:
+  200:
+    description: Deletada com sucesso
+  404:
+    description: Ordem de Serviço não encontrada
+  500:
+    description: Erro interno

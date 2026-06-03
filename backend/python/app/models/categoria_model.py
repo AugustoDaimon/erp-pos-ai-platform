@@ -10,7 +10,6 @@ class CategoriaModel(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     
-    # func.now() diz ao Postgres para preencher isso automaticamente
     criado_em: Mapped[datetime] = mapped_column(DateTime, default=func.now(), server_default=func.now())
 
     def to_entity(self) -> Categoria:

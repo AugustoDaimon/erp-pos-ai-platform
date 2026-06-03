@@ -1,0 +1,52 @@
+Atualizar Ordem de Serviço
+---
+tags:
+  - Ordem de Serviço
+summary: Edita os dados de uma ordem de serviço existente
+description: Comportamento de PATCH, envia apenas os campos que deseja alterar (ex. mudar status ou alterar data).
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: os_id
+    type: integer
+    required: true
+    description: ID da Ordem de Serviço
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      properties:
+        servico_id:
+          type: integer
+          example: 4
+        data_inicio_previsto:
+          type: string
+          format: date-time
+          example: "2026-06-02T15:00:00"
+        data_termino_previsto:
+          type: string
+          format: date-time
+          example: "2026-06-02T16:00:00"
+        data_termino_real:
+          type: string
+          format: date-time
+          example: "2026-06-02T15:45:00"
+        status:
+          type: string
+          enum: [na_fila, em_manutencao, aguardando_peca, pronto, entregue]
+          example: "pronto"
+responses:
+  200:
+    description: Atualizada com sucesso
+  400:
+    description: Erro de validação
+  404:
+    description: Ordem de Serviço não encontrada
+  422:
+    description: Regra de negócio violada
+  500:
+    description: Erro interno

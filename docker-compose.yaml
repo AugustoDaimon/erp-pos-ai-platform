@@ -58,5 +58,79 @@ services:
       - POSTGRES_DB=mydatabase
     command: python main.py
 
+# ---- WHATSAPP API (EVOLUTION API) --
+  evolution-api:
+    container_name: evolution_api
+    image: evoapicloud/evolution-api:v2.3.0
+    restart: no
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - evolution_store:/evolution/store
+      - evolution_instances:/evolution/instances
+
+# ----------- CACHE (PRO EVOLUTION API) ---------
+  redis:
+    image: redis:alpine
+    container_name: evolution_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6380:6379" 
+    volumes:
+      - redis_data:/data
+
+# ---- WHATSAPP WEBHOOK ----
+  whatsapp-webhook:
+    build:
+      context: ./backend/whatsapp_api
+      dockerfile: Dockerfile
+    container_name: whatsapp_flask_api
+    ports:
+      - "5001:5000" 
+    environment:
+      - EVOLUTION_API_URL=http://evolution-api:8080
+      - INSTANCE_NAME=Whatsapp_BOT_Daimon
+      - API_KEY=meu_token_secreto
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - evolution-api
+      - redis
+
+# ---- NGROK ----
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok_tunnel
+    restart: unless-stopped
+    environment:
+      - NGROK_AUTHTOKEN=..
+    command: "http whatsapp-webhook:5000"
+    ports:
+      - "4040:4040"
+    depends_on:
+      - whatsapp-webhook
+
+# ----------- AUTOMAÇÃO (N8N) -------------
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n_automation
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - GENERIC_TIMEZONE=America/Sao_Paulo 
+    volumes:
+      - n8n_data:/home/node/.n8n
+
 volumes:
   pgdata:
+  evolution_store:
+  evolution_instances:
+  redis_data:
+  n8n_data:

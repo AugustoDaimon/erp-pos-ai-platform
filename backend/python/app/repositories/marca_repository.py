@@ -2,12 +2,12 @@ from sqlalchemy import func
 from ..interfaces.marca_repository import IMarcaRepository
 from ..entities.marca import Marca
 from ..models.marca_model import MarcaModel
-from ..models.categoria_model import CategoriaModel # Precisamos importar para buscar as categorias reais
+from ..models.categoria_model import CategoriaModel 
 from ..infrastructure.database.db import db
 
 class MarcaRepository(IMarcaRepository):
 
-    def get_by_id(self, id: int) -> Marca | None:
+    def find_by_id(self, id: int) -> Marca | None:
         model = db.session.get(MarcaModel, id)
         return model.to_entity() if model else None
 
@@ -19,7 +19,6 @@ class MarcaRepository(IMarcaRepository):
     def create(self, marca: Marca) -> Marca:
         model = MarcaModel(nome=marca.nome)
         
-        # RELACIONAMENTO N:N -> Busca as categorias pelo ID e injeta no model da Marca
         if marca.categorias_vinculadas:
             stmt = db.select(CategoriaModel).where(CategoriaModel.id.in_(marca.categorias_vinculadas))
             categorias_db = db.session.scalars(stmt).all()
@@ -38,14 +37,10 @@ class MarcaRepository(IMarcaRepository):
         model = db.session.get(MarcaModel, marca.id)
         if not model:
             return None
-
         model.nome = marca.nome
-
-        # RELACIONAMENTO N:N -> Atualiza a lista de categorias
         stmt = db.select(CategoriaModel).where(CategoriaModel.id.in_(marca.categorias_vinculadas))
         categorias_db = db.session.scalars(stmt).all()
-        model.categorias = list(categorias_db) # O SQLAlchemy apaga os antigos e insere os novos sozinho!
-
+        model.categorias = list(categorias_db) 
         db.session.commit()
         return model.to_entity()
 

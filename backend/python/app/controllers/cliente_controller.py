@@ -3,7 +3,6 @@ from flasgger import swag_from
 from pydantic import ValidationError
 from dataclasses import asdict
 
-# Importando as camadas do Cliente
 from ..repositories.cliente_repository import ClienteRepository
 from ..services.cliente_service import (
     ClienteService, 
@@ -13,8 +12,6 @@ from ..services.cliente_service import (
 from ..DTOs.cliente_dto import CreateClienteDTO, UpdateClienteDTO
 from ..schemas.cliente_schema import CreateClienteRequest, UpdateClienteRequest, ClienteResponse
 
-
-# Inicialização do Blueprint e do Service
 cliente_bp = Blueprint("clientes", __name__, url_prefix='/api/clientes')
 cliente_service = ClienteService(ClienteRepository())
 
@@ -24,11 +21,7 @@ cliente_service = ClienteService(ClienteRepository())
 def criar_cliente():
     try:
         data = request.get_json()
-        
-        # 1. Validação com Pydantic
         schema = CreateClienteRequest(**data)
-
-        # 2. Mapeamento para o DTO de Entrada
         dto = CreateClienteDTO(
             nome=schema.nome,
             celular=schema.celular,
@@ -36,10 +29,7 @@ def criar_cliente():
             bike_info=schema.bike_info
         )
         
-        # 3. Execução da Regra de Negócio
         resultado_dto = cliente_service.create_cliente(dto)
-        
-        # 4. Formatação da Resposta com Pydantic
         return jsonify(ClienteResponse(**asdict(resultado_dto)).model_dump()), 201
 
     except ValidationError as e:
@@ -52,8 +42,6 @@ def criar_cliente():
 @swag_from('docs/cliente/cliente_list.yml')
 def listar_clientes():
     clientes_dto = cliente_service.list_clientes()
-    
-    # Converte cada DTO do Service para o Schema de Resposta do Pydantic
     resposta = [ClienteResponse(**asdict(c)).model_dump() for c in clientes_dto]
     return jsonify(resposta), 200
 
@@ -74,11 +62,7 @@ def buscar_por_id(cliente_id: int):
 def atualizar_cliente(cliente_id: int):
     try:
         data = request.get_json()
-        
-        # Usamos o Schema de Update (onde os campos são opcionais)
         schema = UpdateClienteRequest(**data)
-
-        # Mapeamos para o DTO de Update
         dto = UpdateClienteDTO(
             nome=schema.nome,
             celular=schema.celular,

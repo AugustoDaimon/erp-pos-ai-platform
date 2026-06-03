@@ -1,0 +1,35 @@
+Listar Ordens de Serviço
+---
+tags:
+  - Ordem de Serviço
+summary: Retorna a lista de ordens de serviço cadastradas
+description: Pode ser filtrada por pedido, status ou período de datas (ideal para montar a timeline ou Kanban).
+produces:
+  - application/json
+parameters:
+  - in: query
+    name: pedido_id
+    type: integer
+    required: false
+    description: Filtra as ordens de um pedido específico
+  - in: query
+    name: status
+    type: string
+    enum: [na_fila, em_manutencao, aguardando_peca, pronto, entregue]
+    required: false
+    description: Filtra por um status específico
+  - in: query
+    name: data_inicio
+    type: string
+    format: date-time
+    required: false
+    description: "Início do período de busca (ex: 2026-06-02T00:00:00)"
+  - in: query
+    name: data_fim
+    type: string
+    format: date-time
+    required: false
+    description: "Fim do período de busca (ex: 2026-06-02T23:59:59)"
+responses:
+  200:
+    description: Lista retornada com sucesso

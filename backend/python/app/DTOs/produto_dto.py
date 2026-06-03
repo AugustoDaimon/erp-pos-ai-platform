@@ -20,7 +20,6 @@ class CreateProdutoDTO:
 
 @dataclass
 class UpdateProdutoDTO:
-    # Tudo opcional para permitir atualizações parciais (PATCH)
     descricao: str | None = None
     valor_venda: float | None = None
     categoria_id: int | None = None
@@ -60,7 +59,7 @@ class ProdutoResponseDTO:
     especificacao_3: str | None
     imagem_url: str | None
     criado_em: str
-    tipo: str  # ADICIONADO: Para consistência com o ItemCatalogo
+    tipo: str 
 
     @classmethod
     def from_entity(cls, entity):
@@ -82,7 +81,7 @@ class ProdutoResponseDTO:
             especificacao_3=entity.especificacao_3,
             imagem_url=entity.imagem_url,
             criado_em=entity.criado_em.strftime("%Y-%m-%d %H:%M:%S") if entity.criado_em else "",
-            tipo=getattr(entity, 'tipo', 'produto') # Puxa da entidade pai
+            tipo=getattr(entity, 'tipo', 'produto')
         )
 
 @dataclass
@@ -90,4 +89,4 @@ class FiltroProdutoDTO:
     categoria_id: int | None = None
     marca_id: int | None = None
     busca_descricao: str | None = None
-    estoque_baixo: bool = False # Se True, traz produtos com estoque_atual <= estoque_minimo
+    estoque_baixo: bool = False

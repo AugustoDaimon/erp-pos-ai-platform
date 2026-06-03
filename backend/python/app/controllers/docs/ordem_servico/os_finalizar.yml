@@ -1,0 +1,21 @@
+Finalizar Ordem de Serviço (Atalho)
+---
+tags:
+  - Ordem de Serviço
+summary: Marca a ordem de serviço como concluída rapidamente
+description: Rota de conveniência para o mecânico. Puxa a data atual como `data_termino_real` e altera o status para `pronto` de forma automática.
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: os_id
+    type: integer
+    required: true
+    description: ID da Ordem de Serviço a ser finalizada
+responses:
+  200:
+    description: Serviço finalizado com sucesso
+  404:
+    description: Ordem de Serviço não encontrada
+  500:
+    description: Erro interno

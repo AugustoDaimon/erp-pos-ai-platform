@@ -16,8 +16,6 @@ from ..DTOs.marca_dto import CreateMarcaDTO, UpdateMarcaDTO
 from ..schemas.marca_schema import CreateMarcaRequest, UpdateMarcaRequest, MarcaResponse
 
 marca_bp = Blueprint("marcas", __name__, url_prefix='/api/marcas')
-
-# Instanciando o service com os DOIS repositórios
 marca_service = MarcaService(MarcaRepository(), CategoriaRepository())
 
 @marca_bp.post("/")

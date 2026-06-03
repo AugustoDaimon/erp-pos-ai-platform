@@ -1,0 +1,42 @@
+tags:
+  - Servicos
+summary: Atualiza um serviço existente
+description: Atualiza os dados de um serviço no catálogo através do seu ID. Suporta PATCH (apenas os campos enviados serão atualizados).
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: servico_id
+    type: integer
+    required: true
+    description: ID numérico do serviço a ser atualizado.
+  - in: body
+    name: body
+    description: Objeto JSON contendo os campos que devem ser alterados.
+    required: true
+    schema:
+      type: object
+      properties:
+        descricao:
+          type: string
+          example: "Revisão Geral + Lavagem"
+        preco:
+          type: number
+          format: float
+          example: 180.00
+        tempo_estimado:
+          type: integer
+          example: 150
+responses:
+  200:
+    description: Serviço atualizado com sucesso.
+  400:
+    description: Erro de validação dos dados de entrada (Pydantic).
+  404:
+    description: Serviço não encontrado para atualização.
+  422:
+    description: Regra de negócio violada (ex. preço negativo).
+  500:
+    description: Erro interno do servidor.

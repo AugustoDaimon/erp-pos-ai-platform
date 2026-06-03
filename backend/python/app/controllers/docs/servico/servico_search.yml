@@ -1,0 +1,17 @@
+tags:
+  - Servicos
+summary: Busca um serviço específico pelo ID
+description: Retorna os detalhes de um único serviço do catálogo.
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: servico_id
+    type: integer
+    required: true
+    description: ID numérico do serviço no banco de dados.
+responses:
+  200:
+    description: Dados do serviço retornados com sucesso.
+  404:
+    description: Serviço não encontrado.

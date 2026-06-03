@@ -17,11 +17,10 @@ from ..schemas.subcategoria_schema import CreateSubcategoriaRequest, UpdateSubca
 
 subcategoria_bp = Blueprint("subcategorias", __name__, url_prefix='/api/subcategorias')
 
-# Instanciando o service injetando os DOIS repositórios que ele precisa
 subcategoria_service = SubcategoriaService(SubcategoriaRepository(), CategoriaRepository())
 
 @subcategoria_bp.post("/")
-@swag_from('docs/subcategoria/subcategoria_create.yml') # Descomente quando criar os arquivos YAML
+@swag_from('docs/subcategoria/subcategoria_create.yml')
 def criar_subcategoria():
     try:
         data = request.get_json()

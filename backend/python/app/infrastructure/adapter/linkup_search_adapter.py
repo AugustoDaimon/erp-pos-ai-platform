@@ -32,9 +32,19 @@ class LinkupSearchAdapter(IImageSearchService):
             product_images = []
             for item in raw_results:
                 if item.get("type") == "image":
+                    # 1. Pegamos o título bruto
+                    titulo_bruto = item.get("name", "Imagem do Produto")
+                    
+                    # 2. Cortamos para no máximo 100 caracteres (com '...' no final se for maior)
+                    if len(titulo_bruto) > 100:
+                        titulo_seguro = titulo_bruto[:97] + "..."
+                    else:
+                        titulo_seguro = titulo_bruto
+
+                    # 3. Instanciamos a entidade com o título seguro
                     image_entity = ProductImage(
                         url=item.get("url"),
-                        title=item.get("name", "Imagem do Produto")
+                        titulo=titulo_seguro
                     )
                     product_images.append(image_entity)
                 
@@ -44,5 +54,5 @@ class LinkupSearchAdapter(IImageSearchService):
             return product_images
 
         except Exception as e:
-            print(">>> ERRO CRÍTICO NO ADAPTER:", file=sys.stderr, flush=True)
+            print(">>> ERRO CRÍTICO NO ADAPTER:", e, file=sys.stderr, flush=True)
             return []

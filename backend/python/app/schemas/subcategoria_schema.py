@@ -14,7 +14,6 @@ class CreateSubcategoriaRequest(BaseModel):
     )
 
 class UpdateSubcategoriaRequest(BaseModel):
-    # Todos os campos opcionais para o PATCH/PUT
     categoria_id: int | None = Field(
         None, 
         gt=0, 

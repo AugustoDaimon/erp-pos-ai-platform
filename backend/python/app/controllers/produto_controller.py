@@ -3,7 +3,6 @@ from pydantic import ValidationError
 from flasgger import swag_from 
 from dataclasses import asdict
 
-# Importando os 4 Repositórios
 from ..repositories.produto_repository import ProdutoRepository
 from ..repositories.categoria_repository import CategoriaRepository
 from ..repositories.subcategoria_repository import SubcategoriaRepository
@@ -21,7 +20,6 @@ from ..schemas.produto_schema import CreateProdutoRequest, UpdateProdutoRequest,
 
 produto_bp = Blueprint("produtos", __name__, url_prefix='/api/produtos')
 
-# Instanciando o Service "Chefão"
 produto_service = ProdutoService(
     ProdutoRepository(),
     CategoriaRepository(),
@@ -36,7 +34,6 @@ def criar_produto():
         data = request.get_json()
         schema = CreateProdutoRequest(**data)
         
-        # O model_dump pega todos os campos do schema validado e joga no DTO
         dto = CreateProdutoDTO(**schema.model_dump())
         resultado_dto = produto_service.create_produto(dto)
         
@@ -56,7 +53,6 @@ def criar_produto():
 @produto_bp.get("/")
 @swag_from('docs/produto/produto_list.yml')
 def listar_produtos():
-    # Segurança na extração do booleano (trata None)
     estoque_baixo_str = request.args.get('estoque_baixo', default='false')
     estoque_baixo = str(estoque_baixo_str).lower() in ['true', '1', 't', 'y', 'yes']
 
@@ -80,7 +76,6 @@ def buscar_por_id(produto_id: int):
     except ProdutoNotFoundError as e:
         return jsonify({"erro": str(e)}), 404
 
-# Aceita PUT (Substituição) e PATCH (Atualização Parcial)
 @produto_bp.route("/<int:produto_id>", methods=['PUT', 'PATCH'])
 @swag_from('docs/produto/produto_update.yml')
 def atualizar_produto(produto_id: int):
@@ -88,7 +83,6 @@ def atualizar_produto(produto_id: int):
         data = request.get_json()
         schema = UpdateProdutoRequest(**data)
         
-        # exclude_unset=True é perfeito aqui para o PATCH
         dto = UpdateProdutoDTO(**schema.model_dump(exclude_unset=True))
         
         produto_dto = produto_service.update_produto(produto_id, dto)

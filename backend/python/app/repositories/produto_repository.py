@@ -12,7 +12,6 @@ class ProdutoRepository(IProdutoRepository):
         return model.to_entity() if model else None
 
     def find_by_sku(self, sku: str) -> Optional[Produto]:
-        # Busca exata ignorando maiúsculas/minúsculas no SKU
         stmt = select(ProdutoModel).where(func.lower(ProdutoModel.sku) == sku.lower())
         model = db.session.scalars(stmt).first()
         return model.to_entity() if model else None
@@ -24,7 +23,6 @@ class ProdutoRepository(IProdutoRepository):
         return model.to_entity()
 
     def list_all(self) -> List[Produto]:
-        # Ordenamos por ID decrescente para os mais novos aparecerem primeiro
         stmt = select(ProdutoModel).order_by(ProdutoModel.id.desc())
         models = db.session.scalars(stmt).all()
         return [m.to_entity() for m in models]
@@ -34,11 +32,8 @@ class ProdutoRepository(IProdutoRepository):
         if not model:
             return None
 
-        # Atualiza campos do Catálogo (Pai)
         model.nome = produto.descricao
         model.preco_venda = produto.valor_venda
-
-        # Atualiza campos específicos do Produto
         model.categoria_id = produto.categoria_id
         model.subcategoria_id = produto.subcategoria_id
         model.marca_id = produto.marca_id
@@ -65,10 +60,6 @@ class ProdutoRepository(IProdutoRepository):
         return False
 
     def update_estoque(self, produto_id: int, quantidade: int) -> bool:
-        """
-        Ajusta o saldo de estoque. 
-        quantidade pode ser positiva (entrada) ou negativa (saída na venda).
-        """
         model = db.session.get(ProdutoModel, produto_id)
         if not model:
             return False

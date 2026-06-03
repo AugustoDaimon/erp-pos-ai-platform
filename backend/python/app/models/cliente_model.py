@@ -9,12 +9,10 @@ class ClienteModel(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(255), nullable=False)
-    # Usamos "str | None" no Mapped para indicar ao SQLAlchemy 2.0 que a coluna aceita NULL
     celular: Mapped[str | None] = mapped_column(String(20))
     sem_whatsapp: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     bike_info: Mapped[str | None] = mapped_column(Text)
     
-    # func.now() diz ao Postgres para preencher isso automaticamente caso não seja enviado
     criado_em: Mapped[datetime] = mapped_column(DateTime, default=func.now(), server_default=func.now())
 
     def to_entity(self) -> Cliente:
@@ -29,8 +27,6 @@ class ClienteModel(db.Model):
 
     @staticmethod
     def from_entity(entity: Cliente):
-        # A criação do model aceita os atributos da entidade.
-        # Campos gerados pelo banco (id e criado_em) só são passados se já existirem na entidade.
         return ClienteModel(
             id=entity.id,
             nome=entity.nome,

@@ -2,21 +2,14 @@ from flask import Blueprint, request, jsonify
 from dotenv import load_dotenv
 from pydantic import ValidationError, BaseModel, Field
 from flasgger import swag_from
-from dataclasses import asdict
-from typing import List
 import os
-
-# Importando as camadas da Clean Architecture
 from ..infrastructure.adapter.linkup_search_adapter import LinkupSearchAdapter
 from ..DTOs.search_product_images import SearchProductImagesUseCase
 
-# Configurações (Idealmente via decouple ou os.environ)
 load_dotenv()
 LINKUP_API_KEY = os.getenv("LINKUP_API_KEY")
 image_search_bp = Blueprint("image_search", __name__, url_prefix='/api/images')
 
-# Instanciando as dependências seguindo o fluxo da Clean Arch
-# O Adapter implementa a interface, o UseCase recebe o adapter.
 image_service = LinkupSearchAdapter(LINKUP_API_KEY)
 search_use_case = SearchProductImagesUseCase(image_service)
 
@@ -34,19 +27,26 @@ def pesquisar_imagens():
         data = request.get_json()
         schema = ImageSearchRequest(**data)
 
+        # Chama a camada de caso de uso
         imagens_entidades = search_use_case.execute(schema.description)
         
-        resposta = [
-            {
-                "url": img.url,
-                "title": img.title
-            } for img in imagens_entidades
-        ]
+        # Prevenção caso o use_case retorne None por acidente
+        if not imagens_entidades:
+            return jsonify([]), 200
+        
+        resposta = []
+        for img in imagens_entidades:
+            resposta.append({
+                "url": getattr(img, 'url', ''),
+                # Fallback inteligente: tenta ler 'titulo', se não existir, tenta 'title'
+                "title": getattr(img, 'titulo', getattr(img, 'title', 'Imagem do Produto'))
+            })
         
         return jsonify(resposta), 200
 
     except ValidationError as e:
         return jsonify({"erros_de_validacao": e.errors()}), 400
     except Exception as e:
-        # Tratamento genérico para erros da API do Google ou de rede
+        # Imprime o erro real no terminal do Flask para facilitar o debug
+        print(f"ERRO NO CONTROLLER DE IMAGENS: {e}")
         return jsonify({"erro_servico_externo": str(e)}), 502

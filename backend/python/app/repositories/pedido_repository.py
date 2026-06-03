@@ -11,7 +11,6 @@ from ..infrastructure.database.db import db
 class PedidoRepository(IPedidoRepository):
 
     def create(self, pedido: Pedido) -> Pedido:
-        # 1. Converte a Entity Pedido para o Model
         model = PedidoModel(
             cliente_id=pedido.cliente_id,
             subtotal=pedido.subtotal,
@@ -26,7 +25,6 @@ class PedidoRepository(IPedidoRepository):
             data_prevista_retirada=pedido.data_prevista_retirada
         )
 
-        # 2. Converte e anexa os itens (O SQLAlchemy cuidará das FKs automaticamente)
         for item_entity in pedido.itens:
             item_model = ItensPedidoModel(
                 item_catalogo_id=item_entity.item_id,
@@ -39,7 +37,6 @@ class PedidoRepository(IPedidoRepository):
         db.session.add(model)
         db.session.commit()
         
-        # 3. Retorna a entity com o ID gerado pelo banco
         return self._map_to_entity(model)
 
     def find_by_id(self, pedido_id: int) -> Optional[Pedido]:
@@ -66,7 +63,7 @@ class PedidoRepository(IPedidoRepository):
         return [self._map_to_entity(m) for m in models]
 
     def list_atrasados(self) -> List[Pedido]:
-        # Filtra: data prevista menor que agora E não foi entregue
+        # data prevista menor que agora E não foi entregue
         stmt = select(PedidoModel).where(
             PedidoModel.data_prevista_retirada < func.now(),
             PedidoModel.status_oficina != 'ENTREGUE',
@@ -74,9 +71,14 @@ class PedidoRepository(IPedidoRepository):
         )
         models = db.session.scalars(stmt).all()
         return [self._map_to_entity(m) for m in models]
+    
+    def list_all(self) -> list[Pedido]:
+        from sqlalchemy import select
+        stmt = select(PedidoModel).order_by(PedidoModel.criado_em.desc())
+        models = db.session.scalars(stmt).all()
+        return [model.to_entity() for model in models]
 
     def _map_to_entity(self, model: PedidoModel) -> Pedido:
-        """Método auxiliar para converter o Model (e seus itens) de volta para Entity."""
         itens_entities = [
             ItemPedido(
                 id=m.id,

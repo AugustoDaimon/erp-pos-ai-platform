@@ -65,12 +65,18 @@ def run_migrations_offline():
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url, target_metadata=get_metadata(), literal_binds=True
+        url=url, target_metadata=get_metadata(), literal_binds=True, include_object=incluir_apenas_tabelas_do_sqlalchemy
     )
 
     with context.begin_transaction():
         context.run_migrations()
 
+# Pra evitar confusão entre dados do main flask service (Que usa migration) e outros dados (Que usa o msm database mas n usa esse migration)
+def incluir_apenas_tabelas_do_sqlalchemy(object, name, type_, reflected, compare_to):
+    if type_ == "table":
+        metadata = get_metadata()
+        return name in metadata.tables
+    return True
 
 def run_migrations_online():
     """Run migrations in 'online' mode.
@@ -100,6 +106,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),
+            include_object=incluir_apenas_tabelas_do_sqlalchemy,
             **conf_args
         )
 

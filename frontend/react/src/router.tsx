@@ -3,6 +3,9 @@ import ControleEstoque from './pages/ControleEstoque';
 import GerenciarCatalogo from './pages/GerenciarCatalogo';
 import Menu from './pages/Menu';
 import PontoDeVenda from './pages/PontoDeVenda';
+import ControleServico from './pages/ControleServico';
+import ConferirPedidos from './pages/ConferirPedidos';
+import ControleCliente from './pages/ControleCliente';
 
 export const router = createBrowserRouter([
   {
@@ -17,9 +20,21 @@ export const router = createBrowserRouter([
     path: "/gerenciar-catalogo",
     element: <GerenciarCatalogo />,
   },
-{
+  {
     path: "/ponto-de-venda",
     element: <PontoDeVenda />,
+  },
+  {
+    path: "/servicos",
+    element: <ControleServico />
+  },
+  {
+    path: "/relatorios",
+    element: <ConferirPedidos />
+  },
+  {
+    path: "/clientes",
+    element: <ControleCliente />
   },
   {
     // Rota de 404 - Caso o usuário digite algo inexistente

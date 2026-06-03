@@ -1,0 +1,51 @@
+Criar nova Ordem de Serviço
+---
+tags:
+  - Ordem de Serviço
+summary: Registra um novo agendamento/serviço para a oficina
+description: Cria uma Ordem de Serviço vinculada a um Pedido e a um Serviço do catálogo, definindo o cronograma de execução.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    required: true
+    description: Dados para criação da ordem de serviço.
+    schema:
+      type: object
+      required:
+        - pedido_id
+        - servico_id
+        - data_inicio_previsto
+        - data_termino_previsto
+      properties:
+        pedido_id:
+          type: integer
+          example: 15
+        servico_id:
+          type: integer
+          example: 3
+        data_inicio_previsto:
+          type: string
+          format: date-time
+          example: "2026-06-02T14:00:00"
+        data_termino_previsto:
+          type: string
+          format: date-time
+          example: "2026-06-02T14:45:00"
+        status:
+          type: string
+          enum: [na_fila, em_manutencao, aguardando_peca, pronto, entregue]
+          example: "na_fila"
+          description: "Opcional. Se não enviado, assume 'na_fila'."
+responses:
+  201:
+    description: Ordem de Serviço criada com sucesso
+  400:
+    description: Erro de validação nos dados enviados (Pydantic)
+  422:
+    description: Erro de regra de negócio (ex. término anterior ao início)
+  500:
+    description: Erro interno do servidor

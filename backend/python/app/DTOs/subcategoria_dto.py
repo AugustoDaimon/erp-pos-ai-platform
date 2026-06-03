@@ -32,5 +32,5 @@ class SubcategoriaResponseDTO:
 
 @dataclass
 class FiltroSubcategoriaDTO:
-    categoria_id: int | None = None # Super útil para listar só as subcategorias de uma categoria específica!
+    categoria_id: int | None = None
     busca_nome: str | None = None

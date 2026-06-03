@@ -7,10 +7,10 @@ import { useProdutoMetaData } from '../../hooks/useProdutoMetaData';
 import { produtoService } from '../../services/produtoService';
 import { InputLockButton } from './InputLockButton';
 import { ModalGerenciarCatalogo } from './ModalGerenciarCatalogo';
+import { Wand2 } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom';
 
-// 1. Estado Inicial Único (Fonte da Verdade)
 const initialFormData = {
-  // Informações Básicas
   categoria: '',
   subcategoria: '',
   marca: '',
@@ -19,8 +19,6 @@ const initialFormData = {
   especificacao3: '',
   observacao: '',
   sku: '',
-
-  // Financeiro e Estoque
   venda: '',
   instalacao: '',
   custo: '',
@@ -30,35 +28,45 @@ const initialFormData = {
   estoqueMinimo: ''
 };
 
-export const FormCadastroProduto = () => {
-  const [activeTab, setActiveTab] = useState<'estoque' | 'historico'>('estoque');
+export const FormCadastroProduto = ({ produtoParaEdicao }: { produtoParaEdicao?: any }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [isModalCatalogoAberto, setIsModalCatalogoAberto] = useState(false);
+  const [activeTab, setActiveTab] = useState<'estoque' | 'historico'>('estoque');
+  const [formData, setFormData] = useState(initialFormData);
+  const [formKey, setFormKey] = useState(0);
+  const [lockedFields, setLockedFields] = useState<Record<string, boolean>>({});
 
   const { categorias, marcas, subcategorias, isLoading } = useProdutoMetaData();
-  const categoriasOptions = categorias.map(c => c.nome);
-  const marcasOptions = marcas.map(m => m.nome);
-  const subcategoriasOptions = subcategorias.map(s => s.nome);
 
-  // Estados Isolados para UI
+  const categoriaSelecionadaObj = categorias.find(c => c.nome.toLowerCase() === formData.categoria.toLowerCase());
+  const categoriaSelecionadaId = categoriaSelecionadaObj?.id;
+
+  const subcategoriasFiltradas = categoriaSelecionadaId
+    ? subcategorias.filter(s => s.categoria_id === categoriaSelecionadaId)
+    : subcategorias;
+
+  const marcasFiltradas = categoriaSelecionadaId
+    ? marcas.filter(m => m.categorias_vinculadas?.includes(categoriaSelecionadaId))
+    : marcas;
+
+  const categoriasOptions = categorias.map(c => c.nome);
+  const subcategoriasOptions = subcategoriasFiltradas.map(s => s.nome);
+  const marcasOptions = marcasFiltradas.map(m => m.nome);
+
   const [description, setDescription] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // ESTADO UNIFICADO DOS DADOS DO FORMULÁRIO
-  const [formData, setFormData] = useState(initialFormData);
-  const [formKey, setFormKey] = useState(0);
-
-  const [lockedFields, setLockedFields] = useState<Record<string, boolean>>({});
+  const [isGeneratingSKU, setIsGeneratingSKU] = useState(false);
 
   const toggleLock = (field: string) => {
     setLockedFields(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
-  // ATUALIZADO: Função que limpa os dados
   const resetarFormulario = () => {
     setFormData(prev => {
       const newState = { ...initialFormData };
-
       (Object.keys(newState) as Array<keyof typeof initialFormData>).forEach(key => {
         if (lockedFields[key]) {
           newState[key] = prev[key] as any;
@@ -78,8 +86,33 @@ export const FormCadastroProduto = () => {
     }
   };
 
-  // Montagem Automática da Descrição
   useEffect(() => {
+    if (produtoParaEdicao && categorias.length && subcategorias.length && marcas.length) {
+      setFormData({
+        categoria: categorias.find(c => c.id === produtoParaEdicao.categoria_id)?.nome || '',
+        subcategoria: subcategorias.find(s => s.id === produtoParaEdicao.subcategoria_id)?.nome || '',
+        marca: marcas.find(m => m.id === produtoParaEdicao.marca_id)?.nome || '',
+        especificacao1: produtoParaEdicao.especificacao_1 || '',
+        especificacao2: produtoParaEdicao.especificacao_2 || '',
+        especificacao3: produtoParaEdicao.especificacao_3 || '',
+        observacao: produtoParaEdicao.observacao || '',
+        sku: produtoParaEdicao.sku || '',
+        venda: produtoParaEdicao.valor_venda?.toString() || '',
+        instalacao: produtoParaEdicao.valor_instalacao?.toString() || '',
+        custo: produtoParaEdicao.custo_compra?.toString() || '',
+        lucroR: '',
+        lucroP: '',
+        estoqueAtual: produtoParaEdicao.estoque_atual?.toString() || '',
+        estoqueMinimo: produtoParaEdicao.estoque_minimo?.toString() || ''
+      });
+      setDescription(produtoParaEdicao.descricao);
+      setSelectedImage(produtoParaEdicao.imagem_url || null);
+    }
+  }, [produtoParaEdicao, categorias, subcategorias, marcas]);
+
+  useEffect(() => {
+    if (produtoParaEdicao) return;
+
     const { categoria, subcategoria, marca, especificacao1, especificacao2, especificacao3 } = formData;
     const partes = [categoria, subcategoria, marca, especificacao1, especificacao2, especificacao3]
       .filter(texto => texto && texto.trim() !== "");
@@ -89,49 +122,74 @@ export const FormCadastroProduto = () => {
     if (novaSugestao) {
       setDescription(novaSugestao);
     }
-  }, [formData]);
+  }, [formData, produtoParaEdicao]);
 
-  // Função auxiliar para atualizar o estado unificado
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field as keyof typeof initialFormData]: value }));
   };
 
-  const inputStyle = 'bg-[#fdf2e3] border-2 border-black rounded-lg px-3 py-2 font-bold text-gray-800 placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm';
-  const labelStyle = "text-[11px] font-bold text-gray-500 uppercase ml-1 tracking-wider";
+  const handleGenerateSKU = async () => {
+    const catId = categorias.find(c => c.nome === formData.categoria)?.id;
+    const subId = subcategorias.find(s => s.nome === formData.subcategoria)?.id;
+    const marcaId = marcas.find(m => m.nome === formData.marca)?.id;
 
-  // Estado para evitar cliques duplos enquanto salva
+    if (!catId || !subId || !marcaId) {
+      alert("Por favor, preencha Categoria, Sub-Categoria e Marca primeiro para gerar o SKU.");
+      return;
+    }
+
+    try {
+      setIsGeneratingSKU(true);
+
+      const produtosExistentes = await produtoService.listar({
+        categoria_id: catId,
+        marca_id: marcaId
+      });
+
+      const count = produtosExistentes.filter(p => p.subcategoria_id === subId).length;
+      const nextNumber = count + 1;
+
+      const pad = (num: number) => String(num).padStart(2, '0');
+
+      const novoSKU = `${pad(catId)}${pad(subId)}${pad(marcaId)}${pad(nextNumber)}`;
+
+      handleInputChange('sku', novoSKU);
+
+    } catch (error) {
+      console.error("Erro ao gerar SKU:", error);
+      alert("Falha ao consultar produtos para gerar o SKU.");
+    } finally {
+      setIsGeneratingSKU(false);
+    }
+  };
+
+  const inputStyle = 'bg-[#fdf2e3] border-2 border-black rounded-lg px-3 py-2 font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm w-full';
+  const labelStyle = "text-[11px] font-bold text-gray-500 uppercase ml-1 mb-1 tracking-wider block";
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // IMPORTANTE: Importe o produtoService no topo do arquivo!
-  // import { produtoService } from '../../services/produtoService';
-
   const handleConfirmar = async () => {
-    // 1. Validação Básica
     if (!description.trim()) {
       alert("A descrição do produto é obrigatória.");
       return;
     }
 
-    // Tratamento de conversão de moeda (troca vírgula por ponto para o JavaScript entender)
     const valorVenda = parseFloat(formData.venda.replace(',', '.')) || 0;
-
     if (valorVenda <= 0) {
       alert("O Valor de Venda é obrigatório e deve ser maior que zero.");
       return;
     }
 
-    // 2. "Pescar" os IDs correspondentes aos nomes digitados
-    const categoriaId = categorias.find(c => c.nome === formData.categoria)?.id || null;
-    const subcategoriaId = subcategorias.find(s => s.nome === formData.subcategoria)?.id || null;
-    const marcaId = marcas.find(m => m.nome === formData.marca)?.id || null;
+    const payloadCategoriaId = categorias.find(c => c.nome === formData.categoria)?.id || null;
+    const payloadSubcategoriaId = subcategorias.find(s => s.nome === formData.subcategoria)?.id || null;
+    const payloadMarcaId = marcas.find(m => m.nome === formData.marca)?.id || null;
 
-    // 3. Montar o Objeto exato que sua API (CreateProdutoRequest) espera
     const payload = {
-      descricao: description, // Usamos a variável description pois o usuário pode ter editado na mão
+      descricao: description,
       valor_venda: valorVenda,
-      categoria_id: categoriaId,
-      subcategoria_id: subcategoriaId,
-      marca_id: marcaId,
+      categoria_id: payloadCategoriaId,
+      subcategoria_id: payloadSubcategoriaId,
+      marca_id: payloadMarcaId,
       observacao: formData.observacao || null,
       sku: formData.sku || null,
       valor_instalacao: parseFloat(formData.instalacao.replace(',', '.')) || 0,
@@ -144,18 +202,21 @@ export const FormCadastroProduto = () => {
       imagem_url: selectedImage || null,
     };
 
-    // 4. Enviar para o Backend
     try {
       setIsSubmitting(true);
-      await produtoService.criar(payload);
 
-      alert("Sucesso! Produto cadastrado no estoque.");
+      if (produtoParaEdicao) {
+        await produtoService.atualizar(produtoParaEdicao.id, payload);
+        alert("Sucesso! Produto atualizado com sucesso.");
+        navigate(location.pathname, { replace: true, state: {} });
+      } else {
+        await produtoService.criar(payload);
+        alert("Sucesso! Produto cadastrado no estoque.");
+      }
 
-      // Limpa o formulário automaticamente para o próximo cadastro
       resetarFormulario();
-
     } catch (error) {
-      console.error("Erro ao cadastrar produto:", error);
+      console.error("Erro ao salvar produto:", error);
       alert("Erro ao salvar. Verifique os dados ou a conexão com o servidor.");
     } finally {
       setIsSubmitting(false);
@@ -165,52 +226,40 @@ export const FormCadastroProduto = () => {
   return (
     <div className="bg-[#e0e0e0] p-6 lg:p-8 rounded-2xl shadow-md border border-gray-300 w-[95%] max-w-[1800px] flex-1 flex flex-col relative">
 
-      {/** Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-2xl">
           <p className="font-bold text-blue-600 animate-pulse">Sincronizando catálogo...</p>
         </div>
       )}
 
-      {/* Input de Descrição */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col">
+        <label className={labelStyle}>Descrição do Produto</label>
         <input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descrição do Produto..."
           className="w-full h-14 bg-white rounded-lg px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm font-bold text-lg"
         />
       </div>
 
       <div className="flex flex-col xl:flex-row gap-6 mb-6">
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 xl:w-2/3">
-          {/* CATEGORIA */}
+
           <div className="flex flex-col">
             <div className="flex justify-between items-center mb-1">
-              {/* Agrupamos a Label e o botão de Adicionar */}
               <div className="flex items-center gap-2">
-                <label className={labelStyle}>Categoria</label>
+                <label className="text-[11px] font-bold text-gray-500 uppercase ml-1 tracking-wider">Categoria</label>
                 <button
                   type="button"
                   className="text-xs text-blue-600 hover:text-blue-800 hover:underline focus:outline-none font-medium transition-colors"
                   onClick={() => setIsModalCatalogoAberto(true)}
                 >
-                  + Adicionar Novo (Categoria/Marca)
+                  + Adicionar Novo
                 </button>
-                <ModalGerenciarCatalogo
-                  isOpen={isModalCatalogoAberto}
-                  onClose={() => setIsModalCatalogoAberto(false)}
-                />
+                <ModalGerenciarCatalogo isOpen={isModalCatalogoAberto} onClose={() => setIsModalCatalogoAberto(false)} />
               </div>
-
-              {/* O cadeado continua isolado na direita pelo justify-between */}
-              <InputLockButton
-                locked={!!lockedFields.categoria}
-                onClick={() => toggleLock('categoria')}
-              />
+              <InputLockButton locked={!!lockedFields.categoria} onClick={() => toggleLock('categoria')} />
             </div>
-
             <AutocompleteInput
               key={lockedFields.categoria ? 'locked-categoria' : `${formKey}-categoria`}
               placeholder=""
@@ -219,10 +268,9 @@ export const FormCadastroProduto = () => {
             />
           </div>
 
-          {/* SUB-CATEGORIA */}
           <div className="flex flex-col">
             <div className="flex justify-between items-center mb-1">
-              <label className={labelStyle}>Sub-Categoria</label>
+              <label className="text-[11px] font-bold text-gray-500 uppercase ml-1 tracking-wider">Sub-Categoria</label>
               <InputLockButton locked={!!lockedFields.subcategoria} onClick={() => toggleLock('subcategoria')} />
             </div>
             <AutocompleteInput
@@ -233,10 +281,9 @@ export const FormCadastroProduto = () => {
             />
           </div>
 
-          {/* MARCA */}
           <div className="flex flex-col">
             <div className="flex justify-between items-center mb-1">
-              <label className={labelStyle}>Marca</label>
+              <label className="text-[11px] font-bold text-gray-500 uppercase ml-1 tracking-wider">Marca</label>
               <InputLockButton locked={!!lockedFields.marca} onClick={() => toggleLock('marca')} />
             </div>
             <AutocompleteInput
@@ -247,16 +294,51 @@ export const FormCadastroProduto = () => {
             />
           </div>
 
-          <input placeholder="Especificação 1" value={formData.especificacao1} className={inputStyle} onChange={(e) => handleInputChange('especificacao1', e.target.value)} />
-          <input placeholder="Especificação 2" value={formData.especificacao2} className={inputStyle} onChange={(e) => handleInputChange('especificacao2', e.target.value)} />
-          <input placeholder="Especificação 3" value={formData.especificacao3} className={inputStyle} onChange={(e) => handleInputChange('especificacao3', e.target.value)} />
+          <div className="flex flex-col">
+            <label className={labelStyle}>Especificação 1</label>
+            <input value={formData.especificacao1} className={inputStyle} onChange={(e) => handleInputChange('especificacao1', e.target.value)} />
+          </div>
 
-          {/* CORRIGIDO: Adicionado onChange no SKU e Observação */}
-          <input placeholder="SKU/Código Interno" value={formData.sku} className={inputStyle} onChange={(e) => handleInputChange('sku', e.target.value)} />
-          <input placeholder="Observação/Local Guardado" value={formData.observacao} className={`${inputStyle} md:col-span-2`} onChange={(e) => handleInputChange('observacao', e.target.value)} />
+          <div className="flex flex-col">
+            <label className={labelStyle}>Especificação 2</label>
+            <input value={formData.especificacao2} className={inputStyle} onChange={(e) => handleInputChange('especificacao2', e.target.value)} />
+          </div>
+
+          <div className="flex flex-col">
+            <label className={labelStyle}>Especificação 3</label>
+            <input value={formData.especificacao3} className={inputStyle} onChange={(e) => handleInputChange('especificacao3', e.target.value)} />
+          </div>
+
+          <div className="flex flex-col">
+            <label className={labelStyle}>SKU / Código Interno</label>
+            <div className="flex gap-2">
+              <input
+                value={formData.sku}
+                className={`${inputStyle} flex-1`}
+                onChange={(e) => handleInputChange('sku', e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={handleGenerateSKU}
+                disabled={isGeneratingSKU}
+                title="Gerar SKU Automaticamente"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 flex items-center justify-center transition-colors border-2 border-transparent focus:border-black disabled:bg-blue-300"
+              >
+                {isGeneratingSKU ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Wand2 />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:col-span-2">
+            <label className={labelStyle}>Observação / Local Guardado</label>
+            <input value={formData.observacao} className={inputStyle} onChange={(e) => handleInputChange('observacao', e.target.value)} />
+          </div>
         </div>
 
-        {/* Botão de Busca de Imagem */}
         <div
           onClick={() => setIsModalOpen(true)}
           className="xl:w-1/3 min-h-[200px] bg-[#b1e1fb] rounded-xl flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-blue-200 transition border-2 border-transparent hover:border-blue-400"
@@ -278,29 +360,21 @@ export const FormCadastroProduto = () => {
         </div>
       </div>
 
-      {/* Seção Inferior: Navegação de Abas */}
       <div className="flex gap-4 mb-4 border-b-2 border-gray-400">
         <button
           onClick={() => setActiveTab('estoque')}
-          className={`pb-2 px-4 font-bold transition-all ${activeTab === 'estoque'
-            ? 'border-b-4 border-blue-600 text-blue-600'
-            : 'text-gray-500 hover:text-gray-700'
-            }`}
+          className={`pb-2 px-4 font-bold transition-all ${activeTab === 'estoque' ? 'border-b-4 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
         >
           ESTOQUE E VALORES
         </button>
         <button
           title='EM MANUTENÇÃO!'
-          className={`pb-2 px-4 font-bold transition-all ${activeTab === 'historico'
-            ? 'border-b-4 border-blue-600 text-blue-600'
-            : 'text-gray-500 hover:text-gray-700'
-            }`}
+          className={`pb-2 px-4 font-bold transition-all ${activeTab === 'historico' ? 'border-b-4 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
         >
           HISTÓRICO DE COMPRAS
         </button>
       </div>
 
-      {/* Conteúdo Dinâmico das Abas */}
       <div className="flex-1">
         {activeTab === 'estoque' ? (
           <SecaoEstoqueValores
@@ -315,34 +389,25 @@ export const FormCadastroProduto = () => {
         )}
       </div>
 
-      {/* Botões do Rodapé */}
       <div className="flex justify-end gap-4 mt-8 border-t pt-6">
         <button onClick={handleBotaoLimpar} className="px-6 py-3 bg-red-100 text-red-600 font-bold rounded-xl border-2 border-red-200 hover:bg-red-600 hover:text-white transition-all uppercase tracking-widest text-xs">
           Limpar Formulário
         </button>
         <button
           onClick={handleConfirmar}
-          disabled={isSubmitting} // Para não duplicar envio
+          disabled={isSubmitting}
           className="bg-[#00c950] text-black font-extrabold text-lg py-3 px-12 rounded-lg shadow-md hover:bg-green-500 transition-colors border-2 border-transparent hover:border-black disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isSubmitting ? (
-            <>
-              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              SALVANDO...
-            </>
+            <><div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />SALVANDO...</>
           ) : (
-            "CONFIRMAR"
+            produtoParaEdicao ? "SALVAR ALTERAÇÕES" : "CONFIRMAR"
           )}
         </button>
       </div>
 
-      {/* Modal de Busca */}
       {isModalOpen && (
-        <ImageSearchModal
-          query={description}
-          onClose={() => setIsModalOpen(false)}
-          onSelectImage={(url) => { setSelectedImage(url); setIsModalOpen(false); }}
-        />
+        <ImageSearchModal query={description} onClose={() => setIsModalOpen(false)} onSelectImage={(url) => { setSelectedImage(url); setIsModalOpen(false); }} />
       )}
     </div>
   );

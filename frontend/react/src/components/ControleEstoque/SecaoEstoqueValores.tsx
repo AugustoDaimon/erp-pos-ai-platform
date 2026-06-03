@@ -12,6 +12,49 @@ export const SecaoEstoqueValores = ({ dados, onChange, inputStyle, lockedFields,
     const colWidth = "w-[220px]";
     const smallColWidth = "w-[106px]";
     const labelStyle = "text-[11px] font-bold text-gray-500 uppercase mb-1.5 ml-1 tracking-wider";
+    
+    // Classes do Tailwind para esconder as setas (spinners) dos inputs type="number"
+    const hideArrows = "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+
+    // Função que recalcula e formata os campos apenas quando o usuário sai do input (onBlur)
+    const recalcular = (campoAlterado: 'venda' | 'custo' | 'lucroR' | 'lucroP') => {
+        let v = parseFloat(dados.venda) || 0;
+        let c = parseFloat(dados.custo) || 0;
+        let lR = parseFloat(dados.lucroR) || 0;
+        let lP = parseFloat(dados.lucroP) || 0;
+
+        // 1. Se alterou VENDA ou CUSTO -> Recalcula Lucro
+        if (campoAlterado === 'venda' || campoAlterado === 'custo') {
+            lR = v - c;
+            lP = v > 0 ? (lR / v) * 100 : 0;
+        }
+        // 2. Se alterou LUCRO R$ -> Recalcula Venda e %
+        else if (campoAlterado === 'lucroR') {
+            v = c + lR;
+            lP = v > 0 ? (lR / v) * 100 : 0;
+        }
+        // 3. Se alterou LUCRO % -> Recalcula Venda e R$
+        else if (campoAlterado === 'lucroP') {
+            v = (1 - lP / 100) !== 0 ? c / (1 - lP / 100) : c;
+            lR = v - c;
+        }
+
+        // Atualiza e formata todos com ponto
+        onChange('venda', v.toFixed(2));
+        onChange('lucroR', lR.toFixed(2));
+        onChange('lucroP', lP.toFixed(1));
+
+        // Formata o custo também se ele for o campo que perdeu o foco
+        if (campoAlterado === 'custo') {
+            onChange('custo', c.toFixed(2));
+        }
+    };
+
+    // Formata o valor de instalação no onBlur
+    const formatarInstalacao = () => {
+        const inst = parseFloat(dados.instalacao) || 0;
+        onChange('instalacao', inst.toFixed(2));
+    };
 
     return (
         <div className="flex flex-col gap-6 animate-fadeIn p-2">
@@ -27,7 +70,15 @@ export const SecaoEstoqueValores = ({ dados, onChange, inputStyle, lockedFields,
                         </div>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">R$</span>
-                            <input type="text" value={dados.venda} onChange={(e) => onChange('venda', e.target.value)} placeholder="0.00" className={`${inputStyle} w-full pl-9 text-right`} />
+                            <input 
+                                type="number" 
+                                step="any"
+                                value={dados.venda} 
+                                onChange={(e) => onChange('venda', e.target.value)} 
+                                onBlur={() => recalcular('venda')}
+                                placeholder="0.00" 
+                                className={`${inputStyle} ${hideArrows} w-full pl-9 text-right`} 
+                            />
                         </div>
                     </div>
 
@@ -38,7 +89,15 @@ export const SecaoEstoqueValores = ({ dados, onChange, inputStyle, lockedFields,
                         </div>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">R$</span>
-                            <input type="text" value={dados.instalacao} onChange={(e) => onChange('instalacao', e.target.value)} placeholder="0.00" className={`${inputStyle} w-full pl-9 text-right`} />
+                            <input 
+                                type="number" 
+                                step="any"
+                                value={dados.instalacao} 
+                                onChange={(e) => onChange('instalacao', e.target.value)} 
+                                onBlur={formatarInstalacao}
+                                placeholder="0.00" 
+                                className={`${inputStyle} ${hideArrows} w-full pl-9 text-right`} 
+                            />
                         </div>
                     </div>
                 </div>
@@ -52,7 +111,15 @@ export const SecaoEstoqueValores = ({ dados, onChange, inputStyle, lockedFields,
                         </div>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">R$</span>
-                            <input type="text" value={dados.custo} onChange={(e) => onChange('custo', e.target.value)} placeholder="0.00" className={`${inputStyle} w-full pl-9 text-right`} />
+                            <input 
+                                type="number" 
+                                step="any"
+                                value={dados.custo} 
+                                onChange={(e) => onChange('custo', e.target.value)} 
+                                onBlur={() => recalcular('custo')}
+                                placeholder="0.00" 
+                                className={`${inputStyle} ${hideArrows} w-full pl-9 text-right`} 
+                            />
                         </div>
                     </div>
 
@@ -64,10 +131,26 @@ export const SecaoEstoqueValores = ({ dados, onChange, inputStyle, lockedFields,
                         <div className="flex gap-2">
                             <div className="relative flex-1">
                                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[9px] font-bold">R$</span>
-                                <input type="text" value={dados.lucroR} onChange={(e) => onChange('lucroR', e.target.value)} placeholder="0.00" className={`${inputStyle} w-full pl-6 text-right text-green-700`} />
+                                <input 
+                                    type="number" 
+                                    step="any"
+                                    value={dados.lucroR} 
+                                    onChange={(e) => onChange('lucroR', e.target.value)} 
+                                    onBlur={() => recalcular('lucroR')}
+                                    placeholder="0.00" 
+                                    className={`${inputStyle} ${hideArrows} w-full pl-6 text-right text-green-700`} 
+                                />
                             </div>
                             <div className="relative w-16">
-                                <input type="text" value={dados.lucroP} onChange={(e) => onChange('lucroP', e.target.value)} placeholder="0" className={`${inputStyle} w-full text-center text-green-700`} />
+                                <input 
+                                    type="number" 
+                                    step="any"
+                                    value={dados.lucroP} 
+                                    onChange={(e) => onChange('lucroP', e.target.value)} 
+                                    onBlur={() => recalcular('lucroP')}
+                                    placeholder="0" 
+                                    className={`${inputStyle} ${hideArrows} w-full text-center text-green-700 pr-4`} 
+                                />
                                 <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">%</span>
                             </div>
                         </div>
@@ -82,14 +165,26 @@ export const SecaoEstoqueValores = ({ dados, onChange, inputStyle, lockedFields,
                                 <label className={labelStyle}>Estq. Atual</label>
                                 <InputLockButton locked={!!lockedFields.estoqueAtual} onClick={() => toggleLock('estoqueAtual')} />
                             </div>
-                            <input type="number" value={dados.estoqueAtual} onChange={(e) => onChange('estoqueAtual', e.target.value)} placeholder="0" className={`${inputStyle} w-full text-center`} />
+                            <input 
+                                type="number" 
+                                value={dados.estoqueAtual} 
+                                onChange={(e) => onChange('estoqueAtual', e.target.value)} 
+                                placeholder="0" 
+                                className={`${inputStyle} ${hideArrows} w-full text-center`} 
+                            />
                         </div>
                         <div className={smallColWidth}>
                             <div className="flex justify-between items-center mb-1.5">
                                 <label className={labelStyle}>Estq. Mín.</label>
                                 <InputLockButton locked={!!lockedFields.estoqueMinimo} onClick={() => toggleLock('estoqueMinimo')} />
                             </div>
-                            <input type="number" value={dados.estoqueMinimo} onChange={(e) => onChange('estoqueMinimo', e.target.value)} placeholder="0" className={`${inputStyle} w-full text-center text-orange-600`} />
+                            <input 
+                                type="number" 
+                                value={dados.estoqueMinimo} 
+                                onChange={(e) => onChange('estoqueMinimo', e.target.value)} 
+                                placeholder="0" 
+                                className={`${inputStyle} ${hideArrows} w-full text-center text-orange-600`} 
+                            />
                         </div>
                     </div>
                 </div>

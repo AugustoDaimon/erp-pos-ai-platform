@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 
 class CreateCategoriaRequest(BaseModel):
-    # O max_length=100 reflete a restrição VARCHAR(100) do banco de dados
     nome: str = Field(
         ..., 
         min_length=2, 
@@ -11,7 +10,6 @@ class CreateCategoriaRequest(BaseModel):
 
 
 class UpdateCategoriaRequest(BaseModel):
-    # Todos os campos opcionais para permitir o PATCH
     nome: str | None = Field(
         None, 
         min_length=2, 
@@ -21,7 +19,6 @@ class UpdateCategoriaRequest(BaseModel):
 
 
 class CategoriaResponse(BaseModel):
-    # Formato final que será convertido em JSON para o Frontend
     id: int
     nome: str
     criado_em: str

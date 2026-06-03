@@ -4,13 +4,9 @@ import { ListaSubcategorias } from '../components/GerenciarCatalogo/ListaSubcate
 import { ListaCategorias } from '../components/GerenciarCatalogo/ListaCategorias';
 
 export default function GerenciarCatalogo() {
-    // Estilos padronizados
-    const inputStyle =
-        'w-full bg-[#fdf2e3] border-2 border-black rounded-lg px-3 py-2 font-bold text-gray-800 placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm';
-    const cardStyle =
-        'bg-[#e0e0e0] p-6 rounded-2xl shadow-md border border-gray-300 flex flex-col gap-4 h-full';
-    const listContainerStyle =
-        'bg-white border-2 border-black rounded-lg p-3 h-[250px] overflow-y-auto flex flex-col gap-2 custom-scrollbar';
+    const inputStyle = 'w-full bg-[#fdf2e3] border-2 border-black rounded-lg px-3 py-2 font-bold text-gray-800 placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm shrink-0';
+    const cardStyle = 'bg-[#e0e0e0] p-6 rounded-2xl shadow-md border border-gray-300 flex flex-col gap-4 h-full';
+    const listContainerStyle = 'bg-white border-2 border-black rounded-lg p-3 flex-1 overflow-y-auto flex flex-col gap-2 custom-scrollbar';
 
     const { categorias, marcas, subcategorias, isLoading, invalidarCache } = useProdutoMetaData();
 

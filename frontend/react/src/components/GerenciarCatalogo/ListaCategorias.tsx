@@ -94,31 +94,32 @@ export function ListaCategorias({
     return (
         <div className={cardStyle}>
             <h2 className="text-xl font-extrabold text-black bg-white py-2 px-4 rounded-lg border-2 border-black text-center">
-                1. CATEGORIAS
+                CATEGORIAS
             </h2>
 
             {/* Fórmulario de Adição */}
-            <div className="flex flex-col gap-2 mt-2">
-                <input
-                    placeholder="Nome da nova categoria"
-                    className={inputStyle}
-                    value={novaCategoria}
-                    onChange={(e) => setNovaCategoria(e.target.value)}
-                    disabled={isLoading}
-                />
+            <div className="flex flex-col gap-2 mt-2 h-[260px] shrink-0">
+                <div className="flex-1 flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-1">
+                    <input
+                        placeholder="Nome da nova categoria"
+                        className={inputStyle}
+                        value={novaCategoria}
+                        onChange={(e) => setNovaCategoria(e.target.value)}
+                        disabled={isLoading}
+                    />
+                </div>
                 <button
                     onClick={handleAddCategoria}
                     disabled={isLoading}
-                    className="bg-[#00c950] text-black font-bold py-2 rounded-lg shadow hover:bg-green-500 transition border-2 border-transparent hover:border-black disabled:opacity-50"
+                    className="mt-auto shrink-0 bg-[#00c950] text-black font-bold py-2 rounded-lg shadow hover:bg-green-500 transition border-2 border-transparent hover:border-black disabled:opacity-50"
                 >
                     {isLoading ? 'SALVANDO...' : '+ ADICIONAR CATEGORIA'}
                 </button>
             </div>
 
             {/* Listagem */}
-            <div className="mt-4 flex-1 flex flex-col">
-                <h3 className="font-bold text-gray-700 mb-2">Categorias Cadastradas:</h3>
-
+            <div className="mt-4 flex-1 flex flex-col overflow-hidden">
+                <h3 className="font-bold text-gray-700 mb-2 shrink-0">Categorias Cadastradas:</h3>
                 <div className={listContainerStyle}>
                     {categorias.length === 0 && !isLoading && (
                         <p className="text-gray-400 text-center mt-10">Nenhuma categoria encontrada.</p>

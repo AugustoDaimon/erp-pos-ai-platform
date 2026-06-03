@@ -1,26 +1,17 @@
 from dataclasses import dataclass, asdict
 
-# ==========================================
-# DTO para CRIAÇÃO (Create)
-# ==========================================
+# DTO para CRIAÇÃO 
 @dataclass
 class CreateItemPedidoDTO:
-    """
-    Nota: O 'valor_total' NÃO vem do frontend. 
-    Ele será calculado pelo Service multiplicando quantidade * valor_unitario.
-    """
     produto_id: int
     quantidade: int
     valor_unitario: float
-    pedido_id: int | None = None # Pode ser None se o pedido ainda estiver sendo montado na memória
+    pedido_id: int | None = None # None se o pedido ainda estiver sendo montado
 
 
-# ==========================================
-# DTO para ATUALIZAÇÃO (Update / PATCH)
-# ==========================================
+# DTO para ATUALIZAÇÃO
 @dataclass
 class UpdateItemPedidoDTO:
-    """Geralmente usado quando o usuário altera a quantidade no carrinho."""
     quantidade: int | None = None
     valor_unitario: float | None = None
 
@@ -28,9 +19,7 @@ class UpdateItemPedidoDTO:
         return {k: v for k, v in asdict(self).items() if v is not None}
 
 
-# ==========================================
-# DTO para LEITURA (Response)
-# ==========================================
+# DTO para LEITURA
 @dataclass
 class ItemPedidoResponseDTO:
     id: int

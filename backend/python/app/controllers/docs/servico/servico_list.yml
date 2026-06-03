@@ -1,0 +1,39 @@
+tags:
+  - Servicos
+summary: Lista todos os serviços do catálogo
+description: Retorna uma lista de serviços cadastrados. É possível utilizar query parameters para buscar serviços pelo nome.
+produces:
+  - application/json
+parameters:
+  - in: query
+    name: busca
+    type: string
+    required: false
+    description: Filtrar serviços onde a descrição contém o termo buscado.
+responses:
+  200:
+    description: Lista de serviços retornada com sucesso.
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          descricao:
+            type: string
+            example: "Revisão Geral"
+          preco:
+            type: number
+            format: float
+            example: 150.00
+          tempo_estimado:
+            type: integer
+            example: 120
+          criado_em:
+            type: string
+            example: "2026-05-28 10:00:00"
+          tipo:
+            type: string
+            example: "servico"

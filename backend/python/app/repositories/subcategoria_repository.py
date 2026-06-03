@@ -1,4 +1,4 @@
-from sqlalchemy import func # Adicionado para fazer a busca case-insensitive
+from sqlalchemy import func 
 from ..interfaces.subcategoria_repository import ISubcategoriaRepository
 from ..entities.subcategoria import Subcategoria
 from ..models.subcategoria_model import SubcategoriaModel
@@ -6,7 +6,7 @@ from ..infrastructure.database.db import db
 
 class SubcategoriaRepository(ISubcategoriaRepository):
 
-    def get_by_id(self, id: int) -> Subcategoria | None:
+    def find_by_id(self, id: int) -> Subcategoria | None:
         model = db.session.get(SubcategoriaModel, id)
         if model:
             return model.to_entity() 
@@ -28,7 +28,6 @@ class SubcategoriaRepository(ISubcategoriaRepository):
         if not model:
             return None
 
-        # Na atualização de subcategoria, podemos mudar o nome e trocar a qual categoria ela pertence!
         model.nome = subcategoria.nome
         model.categoria_id = subcategoria.categoria_id
 

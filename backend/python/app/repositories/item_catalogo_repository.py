@@ -11,7 +11,6 @@ class ItemCatalogoRepository(IItemCatalogoRepository):
         model = db.session.get(ItemCatalogoModel, item_id)
         if not model:
             return None
-        # Mapeia para a Entity base
         return ItemCatalogo(
             id=model.id,
             nome=model.nome,
@@ -20,8 +19,6 @@ class ItemCatalogoRepository(IItemCatalogoRepository):
         )
 
     def search_by_nome(self, nome: str) -> List[ItemCatalogo]:
-        """Ideal para o Autocomplete do carrinho de compras no React"""
-        # Busca itens que contenham o texto (case-insensitive)
         stmt = select(ItemCatalogoModel).where(
             ItemCatalogoModel.nome.ilike(f"%{nome}%")
         ).order_by(ItemCatalogoModel.nome)

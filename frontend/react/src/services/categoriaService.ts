@@ -26,7 +26,6 @@ export const categoriaService = {
 
   // 3. CRIAR NOVA
   criar: async (dados: CreateCategoriaRequest): Promise<Categoria> => {
-    // Retorna 201 Created em caso de sucesso no seu Flask
     const response = await api.post<Categoria>("/categorias/", dados);
     return response.data;
   },
