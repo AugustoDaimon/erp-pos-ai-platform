@@ -127,10 +127,10 @@ def receber_mensagem():
 def receber_comando_n8n():
     dados = request.json
     
-    numero_destino = dados.get("numero")
+    numero_destino = str(dados.get("numero", ""))
     texto_mensagem = dados.get("texto")
     
-    if not numero_destino or not texto_mensagem:
+    if not numero_destino or numero_destino == "None" or not texto_mensagem:
         print("[ERRO] Pedido do n8n incompleto. Faltando número ou texto.")
         return jsonify({"erro": "Parâmetros 'numero' e 'texto' são obrigatórios"}), 400
 

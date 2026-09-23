@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 export interface AutocompleteProps {
-  placeholder: string;
+  placeholder?: string;
   options: string[];
   className?: string;
   onSelect?: (value: string) => void; 
@@ -15,11 +15,6 @@ export default function AutocompleteInput({
 }: AutocompleteProps) {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-
-  // Sincroniza o valor digitado com o pai (para quando o usuário digita manualmente)
-  useEffect(() => {
-    if (onSelect) onSelect(inputValue);
-  }, [inputValue]);
 
   const filteredOptions = options.filter((opt) =>
     opt.toLowerCase().includes(inputValue.toLowerCase())
@@ -35,22 +30,22 @@ export default function AutocompleteInput({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Tab' && inlineSuggestion) {
+      e.preventDefault(); // Evita que o foco pule para o próximo campo ao usar o Tab
       setInputValue(firstMatch!); 
       setIsOpen(false);
-      // Notifica o pai imediatamente na seleção por Tab
       if (onSelect) onSelect(firstMatch!);
     }
   };
 
   const inputStyleBase =
-    'border-2 border-black rounded-lg px-3 py-2 font-bold text-gray-800 shadow-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500';
+    'border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm w-full transition-all';
 
   return (
     <div className={`relative w-full ${className}`}>
-      {/* INPUT DE FUNDO (Sugestão azul) */}
+      {/* INPUT DE FUNDO (Sugestão fantasma) */}
       <input
         type="text"
-        className={`${inputStyleBase} absolute top-0 left-0 bg-[#fdf2e3] text-blue-500 pointer-events-none placeholder-transparent`}
+        className={`${inputStyleBase} absolute top-0 left-0 bg-gray-50 text-gray-400 pointer-events-none placeholder-transparent`}
         value={inlineSuggestion}
         readOnly
         tabIndex={-1}
@@ -60,11 +55,13 @@ export default function AutocompleteInput({
       <input
         type="text"
         placeholder={placeholder}
-        className={`${inputStyleBase} relative z-10 bg-transparent placeholder-black`}
+        className={`${inputStyleBase} relative z-10 bg-transparent placeholder-gray-400 font-medium`}
         value={inputValue}
         onChange={(e) => {
-          setInputValue(e.target.value);
+          const newValue = e.target.value;
+          setInputValue(newValue);
           setIsOpen(true);
+          if (onSelect) onSelect(newValue); // Sincroniza imediatamente com o pai
         }}
         onKeyDown={handleKeyDown}
         onFocus={() => setIsOpen(true)}
@@ -73,18 +70,18 @@ export default function AutocompleteInput({
 
       {/* DROPDOWN MENU */}
       {isOpen && filteredOptions.length > 0 && (
-        <ul className="absolute z-50 w-full bg-[#fdf2e3] border-2 border-black mt-1 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+        <ul className="absolute z-50 w-full bg-white border border-gray-200 mt-1.5 rounded-xl shadow-lg max-h-52 overflow-y-auto overflow-x-hidden">
           {filteredOptions.map((opt) => (
             <li
               key={opt}
               onMouseDown={(e) => {
+                // onMouseDown é usado ao invés de onClick para disparar ANTES do onBlur do input
                 e.preventDefault();
                 setInputValue(opt);
                 setIsOpen(false);
-                // Notifica o pai no clique
                 if (onSelect) onSelect(opt);
               }}
-              className="px-3 py-2 hover:bg-[#b1e1fb] cursor-pointer font-bold text-gray-800 border-b border-gray-300 last:border-0 transition-colors"
+              className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm font-medium text-gray-700 transition-colors border-b border-gray-100 last:border-0"
             >
               {opt}
             </li>

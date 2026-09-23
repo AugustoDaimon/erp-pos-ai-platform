@@ -6,6 +6,8 @@ import PontoDeVenda from './pages/PontoDeVenda';
 import ControleServico from './pages/ControleServico';
 import ConferirPedidos from './pages/ConferirPedidos';
 import ControleCliente from './pages/ControleCliente';
+import ControleCompras from './pages/ControleCompras';
+import NovoPedido from './pages/NovoPedido';
 
 export const router = createBrowserRouter([
   {
@@ -17,8 +19,17 @@ export const router = createBrowserRouter([
     element: <ControleEstoque />,
   },
   {
-    path: "/gerenciar-catalogo",
-    element: <GerenciarCatalogo />,
+    path: "/compras",
+    children: [
+      {
+        index: true, // O index true faz o ControleCompras renderizar exatamente em "/compras"
+        element: <ControleCompras />,
+      },
+      {
+        path: "novo", // O caminho final ficará "/compras/novo"
+        element: <NovoPedido />,
+      }
+    ]
   },
   {
     path: "/ponto-de-venda",

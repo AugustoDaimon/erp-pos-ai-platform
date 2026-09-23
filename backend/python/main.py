@@ -42,7 +42,10 @@ def create_app():
     CORS(app, origins=[
         "http://localhost:5173", 
         "http://127.0.0.1:5173",
-        "http://192.168.15.175:5173"
+        "http://192.168.15.175:5173",
+        "http://192.168.15.175:5000",
+        "http://redragon.local:5000",
+        "http://redragon.local:5173"
     ])
 
     app.config["SWAGGER"] = {
